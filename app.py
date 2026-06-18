@@ -38,6 +38,15 @@ def get_db():
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
+def migrate_db():
+    """Add new columns to existing tables without dropping data."""
+    conn = get_db()
+    try:
+        conn.execute("ALTER TABLE credits ADD COLUMN is_team INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    conn.close()
+
 def init_db():
     conn = get_db()
     conn.executescript("""
@@ -80,6 +89,7 @@ def init_db():
     conn.close()
 
 init_db()
+migrate_db()
 
 # ========== 工具函数 ==========
 def allowed_file(filename):
