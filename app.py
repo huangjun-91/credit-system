@@ -326,31 +326,29 @@ def export_data():
 
     # Generate CSV as bytes with BOM for Excel compatibility
     header = ['编号', '姓名', '工号', '所属学院', '获奖名称', '获奖层次', '获奖等级', '折算学分', '状态', '提交时间', '审核时间']
-    rows = []
-    rows.append(','.join([f'"{h}"' for h in header]))
+    rows = ['\t'.join(header)]
     for r in records:
-        row = ','.join([
+        rows.append('\t'.join([
             str(r['id']),
-            f'"{r["real_name"] or ""}"',
-            f'"{r["teacher_id"] or ""}"',
-            f'"{r["department"] or ""}"',
-            f'"{r["title"] or ""}"',
-            f'"{r["award_level"] or ""}"',
-            f'"{r["award_grade"] or ""}"',
+            r['real_name'] or '',
+            r['teacher_id'] or '',
+            r['department'] or '',
+            r['title'] or '',
+            r['award_level'] or '',
+            r['award_grade'] or '',
             str(r['credits']),
-            f'"{r["status"] or ""}"',
-            f'"{r["submit_time"] or ""}"',
-            f'"{r["review_time"] or ""}"'
-        ])
-        rows.append(row)
-    csv_content = '\n'.join(rows)
+            r['status'] or '',
+            r['submit_time'] or '',
+            r['review_time'] or ''
+        ]))
+    csv_content = '\r\n'.join(rows)
     filename = f'teacher_credits_{datetime.date.today()}.csv'
-    # Use UTF-8 BOM for Excel compatibility
     csv_bytes = csv_content.encode('utf-8-sig')
-    return csv_bytes, 200, {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': f"attachment; filename=\"{filename}\""
-    }
+    from flask import make_response
+    resp = make_response(csv_bytes)
+    resp.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    resp.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return resp
 
 # ----- 图片访问 -----
 @app.route('/uploads/<filename>')
