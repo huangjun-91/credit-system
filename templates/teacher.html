@@ -178,7 +178,7 @@
         <!-- 按获奖层次统计 -->
         {% if stats %}
         <div class="row g-3 mb-4">
-            {% for level in ['国家级', '省部级', '市厅级', '校级', '院级'] %}
+            {% for level in ['国家级', '市级', '区县级'] %}
                 {% set data = stats.get(level, {}) %}
                 <div class="col">
                     <div class="stat-card">
@@ -204,7 +204,15 @@
                             <input type="text" name="title" class="form-control" placeholder="如：全国大学生数学建模竞赛指导" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-medium">折算学分数 *</label>
+                            <label class="form-label fw-medium">折合学分数 *</label>
+                            <div class="alert alert-info small p-2 mb-2" style="font-size:0.8rem; line-height:1.4;">
+                                <strong>单人获奖计分：</strong><br>
+                                国家级：一等奖0.5分、二等奖0.3分、三等奖0.2分<br>
+                                市级：一等奖0.3分、二等奖0.2分、三等奖0.1分<br>
+                                县级：一等奖0.1分、二等奖0.075分、三等奖0.05分<br>
+                                <strong>团体奖：</strong>双倍记分，指导教师得分 + 班辅教师得分 = 获奖总分<br>
+                                <small>例：8人获国家一等奖，总分=0.5×2=1，指导教师得0.5，班辅教师得分=0.5×(本班人数÷8)÷2</small>
+                            </div>
                             <input type="number" name="credits" class="form-control" value="1" min="0.5" step="0.5">
                         </div>
                         <div class="col-md-6">

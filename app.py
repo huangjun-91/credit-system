@@ -27,8 +27,8 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ========== 获奖层次与等级选项 ==========
-AWARD_LEVELS = ['国家级', '省部级', '市厅级', '校级', '院级']
-AWARD_GRADES = ['一等奖', '二等奖', '三等奖', '特等奖', '优秀奖', '入围奖', '其他']
+AWARD_LEVELS = ['国家级', '市级', '区县级']
+AWARD_GRADES = ['一等奖（第1-2名）', '二等奖（第3-5名）', '三等奖（第6-8名）']
 
 # ========== 数据库初始化 ==========
 def get_db():
@@ -67,8 +67,8 @@ def init_db():
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             category TEXT NOT NULL DEFAULT '其他',
-            award_level TEXT NOT NULL DEFAULT '校级',
-            award_grade TEXT NOT NULL DEFAULT '一等奖',
+            award_level TEXT NOT NULL DEFAULT '国家级',
+            award_grade TEXT NOT NULL DEFAULT '一等奖（第1-2名）',
             credits REAL NOT NULL DEFAULT 1,
             description TEXT DEFAULT '',
             image_path TEXT DEFAULT '',
