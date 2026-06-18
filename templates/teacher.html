@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教师面板 - 教师获奖证书管理系统</title>
+    <title>教师面板 - 云阳县民德小学教师获奖证书管理系统</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -129,7 +129,7 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">
-                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i> 教师获奖证书管理系统
+                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i> 云阳县民德小学教师获奖证书管理系统
             </a>
             <div class="d-flex align-items-center">
                 <span class="me-3 text-muted small">
@@ -226,6 +226,16 @@
                         <div class="col-12">
                             <label class="form-label fw-medium">获奖说明 / 指导学生信息</label>
                             <textarea name="description" class="form-control" rows="2" placeholder="如：指导XX学院XX级XX名学生，获得XX奖..."></textarea>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_team" id="isTeam" value="1">
+                                    <label class="form-check-label fw-medium" for="isTeam">
+                                        是否团队赛
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-medium">上传证书图片（JPG/PNG/PDF）</label>
