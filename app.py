@@ -324,17 +324,29 @@ def export_data():
     """).fetchall()
     conn.close()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['编号', '姓名', '工号', '所属学院', '获奖名称', '获奖层次', '获奖等级', '折算学分', '状态', '提交时间', '审核时间'])
+    # Generate CSV as bytes with BOM for Excel compatibility
+    header = ['编号', '姓名', '工号', '所属学院', '获奖名称', '获奖层次', '获奖等级', '折算学分', '状态', '提交时间', '审核时间']
+    rows = []
+    rows.append(','.join([f'"{h}"' for h in header]))
     for r in records:
-        writer.writerow([r['id'], r['real_name'], r['teacher_id'], r['department'],
-                        r['title'], r['award_level'], r['award_grade'],
-                        r['credits'], r['status'],
-                        r['submit_time'], r['review_time']])
+        row = ','.join([
+            str(r['id']),
+            f'"{r["real_name"] or ""}"',
+            f'"{r["teacher_id"] or ""}"',
+            f'"{r["department"] or ""}"',
+            f'"{r["title"] or ""}"',
+            f'"{r["award_level"] or ""}"',
+            f'"{r["award_grade"] or ""}"',
+            str(r['credits']),
+            f'"{r["status"] or ""}"',
+            f'"{r["submit_time"] or ""}"',
+            f'"{r["review_time"] or ""}"'
+        ])
+        rows.append(row)
+    csv_content = '\n'.join(rows)
     filename = f'teacher_credits_{datetime.date.today()}.csv'
     # Use UTF-8 BOM for Excel compatibility
-    csv_bytes = output.getvalue().encode('utf-8-sig')
+    csv_bytes = csv_content.encode('utf-8-sig')
     return csv_bytes, 200, {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': f"attachment; filename=\"{filename}\""
