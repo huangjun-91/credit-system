@@ -332,9 +332,10 @@ def export_data():
                         r['title'], r['award_level'], r['award_grade'],
                         r['credits'], r['status'],
                         r['submit_time'], r['review_time']])
+    filename = f'teacher_credits_{datetime.date.today()}.csv'
     return output.getvalue(), 200, {
         'Content-Type': 'text/csv; charset=utf-8-sig',
-        'Content-Disposition': f'attachment; filename=教师获奖学分_{datetime.date.today()}.csv'
+        'Content-Disposition': f"attachment; filename=\"{filename}\""
     }
 
 # ----- 图片访问 -----
