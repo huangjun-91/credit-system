@@ -1,6 +1,7 @@
 """
-鏁欏笀鑾峰璇佷功绠＄悊绯荤粺 - 鍚庣 (Flask)
-鍔熻兘锛氭暀甯堟敞鍐?鐧诲綍銆佷笂浼犳寚瀵煎鐢熻幏濂栬瘉涔︺€佺鐞嗗憳瀹℃牳銆佸鍒嗙粺璁?"""
+教师获奖证书管理系统 - 后端 (Flask)
+功能：教师注册/登录、上传指导学生获奖证书、管理员审核、学分统计
+"""
 
 import os
 import sqlite3
@@ -13,7 +14,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'change-this-in-production')
 
-# ========== 閰嶇疆 ==========
+# ========== 配置 ==========
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', BASE_DIR)
 DB_PATH = os.path.join(DATA_DIR, 'database.db')
@@ -25,11 +26,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ========== 鑾峰灞傛涓庣瓑绾ч€夐」 ==========
-AWARD_LEVELS = ['鍥藉绾?, '鐪侀儴绾?, '甯傚巺绾?, '鏍＄骇', '闄㈢骇']
-AWARD_GRADES = ['涓€绛夊', '浜岀瓑濂?, '涓夌瓑濂?, '鐗圭瓑濂?, '浼樼濂?, '鍏ュ洿濂?, '鍏朵粬']
+# ========== 获奖层次与等级选项 ==========
+AWARD_LEVELS = ['国家级', '省部级', '市厅级', '校级', '院级']
+AWARD_GRADES = ['一等奖', '二等奖', '三等奖', '特等奖', '优秀奖', '入围奖', '其他']
 
-# ========== 鏁版嵁搴撳垵濮嬪寲 ==========
+# ========== 数据库初始化 ==========
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -56,13 +57,13 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
-            category TEXT NOT NULL DEFAULT '鍏朵粬',
-            award_level TEXT NOT NULL DEFAULT '鏍＄骇',
-            award_grade TEXT NOT NULL DEFAULT '涓€绛夊',
+            category TEXT NOT NULL DEFAULT '其他',
+            award_level TEXT NOT NULL DEFAULT '校级',
+            award_grade TEXT NOT NULL DEFAULT '一等奖',
             credits REAL NOT NULL DEFAULT 1,
             description TEXT DEFAULT '',
             image_path TEXT DEFAULT '',
-            status TEXT NOT NULL DEFAULT '寰呭鏍?,
+            status TEXT NOT NULL DEFAULT '待审核',
             submit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             review_time TIMESTAMP,
             reviewer_id INTEGER,
@@ -70,15 +71,16 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
 
-        -- 鎻掑叆榛樿绠＄悊鍛?        INSERT OR IGNORE INTO users (username, password, real_name, role)
-            VALUES ('admin', 'admin123', '绠＄悊鍛?, 'admin');
+        -- 插入默认管理员
+        INSERT OR IGNORE INTO users (username, password, real_name, role)
+            VALUES ('admin', 'admin123', '管理员', 'admin');
     """)
     conn.commit()
     conn.close()
 
 init_db()
 
-# ========== 宸ュ叿鍑芥暟 ==========
+# ========== 工具函数 ==========
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -86,7 +88,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_id' not in session:
-            flash('璇峰厛鐧诲綍', 'warning')
+            flash('请先登录', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
@@ -95,25 +97,25 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_id' not in session or session.get('role') != 'admin':
-            flash('闇€瑕佺鐞嗗憳鏉冮檺', 'danger')
+            flash('需要管理员权限', 'danger')
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated
 
 def get_teacher_stats(conn, user_id):
-    """鑾峰彇鏁欏笀瀛﹀垎缁熻"""
+    """获取教师学分统计"""
     stats = conn.execute("""
         SELECT 
             award_level,
             SUM(credits) as total,
             COUNT(*) as count
         FROM credits 
-        WHERE user_id = ? AND status = '宸查€氳繃'
+        WHERE user_id = ? AND status = '已通过'
         GROUP BY award_level
     """, (user_id,)).fetchall()
     return {row['award_level']: {'total': row['total'], 'count': row['count']} for row in stats}
 
-# ========== 璺敱 ==========
+# ========== 路由 ==========
 
 @app.route('/')
 def index():
@@ -125,7 +127,7 @@ def index():
         return redirect(url_for('teacher_dashboard'))
     return render_template('index.html')
 
-# ----- 璁よ瘉 -----
+# ----- 认证 -----
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -139,9 +141,9 @@ def login():
             session['username'] = user['username']
             session['real_name'] = user['real_name']
             session['role'] = user['role']
-            flash(f'娆㈣繋鍥炴潵锛寋user["real_name"] or user["username"]}锛?, 'success')
+            flash(f'欢迎回来，{user["real_name"] or user["username"]}！', 'success')
             return redirect(url_for('index'))
-        flash('鐢ㄦ埛鍚嶆垨瀵嗙爜閿欒', 'danger')
+        flash('用户名或密码错误', 'danger')
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -155,7 +157,7 @@ def register():
         department = request.form.get('department', '').strip()
 
         if not username or not password:
-            flash('鐢ㄦ埛鍚嶅拰瀵嗙爜涓嶈兘涓虹┖', 'danger')
+            flash('用户名和密码不能为空', 'danger')
             return render_template('register.html')
 
         conn = get_db()
@@ -165,10 +167,10 @@ def register():
                 (username, password, real_name, teacher_id, title, department)
             )
             conn.commit()
-            flash('娉ㄥ唽鎴愬姛锛佽鐧诲綍', 'success')
+            flash('注册成功！请登录', 'success')
             return redirect(url_for('login'))
         except sqlite3.IntegrityError:
-            flash('鐢ㄦ埛鍚嶅凡瀛樺湪', 'danger')
+            flash('用户名已存在', 'danger')
         finally:
             conn.close()
     return render_template('register.html')
@@ -176,10 +178,10 @@ def register():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('宸查€€鍑虹櫥褰?, 'info')
+    flash('已退出登录', 'info')
     return redirect(url_for('login'))
 
-# ----- 鏁欏笀绔?-----
+# ----- 教师端 -----
 @app.route('/teacher')
 @login_required
 def teacher_dashboard():
@@ -201,7 +203,7 @@ def teacher_dashboard():
 @login_required
 def submit_credit():
     if session.get('role') != 'teacher':
-        flash('浠呴檺鏁欏笀鎿嶄綔', 'danger')
+        flash('仅限教师操作', 'danger')
         return redirect(url_for('index'))
 
     title = request.form.get('title', '').strip()
@@ -211,7 +213,7 @@ def submit_credit():
     description = request.form.get('description', '').strip()
 
     if not title or not award_level or not award_grade:
-        flash('璇峰～鍐欒幏濂栧悕绉般€佸眰娆″拰绛夌骇', 'danger')
+        flash('请填写获奖名称、层次和等级', 'danger')
         return redirect(url_for('teacher_dashboard'))
 
     try:
@@ -219,7 +221,7 @@ def submit_credit():
         if credits <= 0:
             raise ValueError
     except ValueError:
-        flash('鎶樼畻瀛﹀垎鏁板繀椤诲ぇ浜?', 'danger')
+        flash('折算学分数必须大于0', 'danger')
         return redirect(url_for('teacher_dashboard'))
 
     image_path = ''
@@ -234,16 +236,16 @@ def submit_credit():
     conn = get_db()
     conn.execute(
         """INSERT INTO credits (user_id, title, category, award_level, award_grade, credits, description, image_path, status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, '寰呭鏍?)""",
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, '待审核')""",
         (session['user_id'], title, award_level, award_level, award_grade, credits, description, image_path)
     )
     conn.commit()
     conn.close()
 
-    flash('鑾峰璇佷功鐢宠宸叉彁浜わ紝绛夊緟绠＄悊鍛樺鏍?, 'success')
+    flash('获奖证书申请已提交，等待管理员审核', 'success')
     return redirect(url_for('teacher_dashboard'))
 
-# ----- 绠＄悊鍛樼 -----
+# ----- 管理员端 -----
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
@@ -251,7 +253,7 @@ def admin_dashboard():
     pending = conn.execute("""
         SELECT c.*, u.real_name, u.teacher_id, u.department
         FROM credits c JOIN users u ON c.user_id = u.id
-        WHERE c.status = '寰呭鏍?
+        WHERE c.status = '待审核'
         ORDER BY c.submit_time DESC
     """).fetchall()
     
@@ -277,16 +279,16 @@ def review_credit(credit_id):
     conn = get_db()
     if action == 'approve':
         conn.execute(
-            "UPDATE credits SET status = '宸查€氳繃', review_time = CURRENT_TIMESTAMP, reviewer_id = ?, review_comment = ? WHERE id = ?",
+            "UPDATE credits SET status = '已通过', review_time = CURRENT_TIMESTAMP, reviewer_id = ?, review_comment = ? WHERE id = ?",
             (session['user_id'], comment, credit_id)
         )
-        flash('宸插鏍搁€氳繃', 'success')
+        flash('已审核通过', 'success')
     elif action == 'reject':
         conn.execute(
-            "UPDATE credits SET status = '宸叉嫆缁?, review_time = CURRENT_TIMESTAMP, reviewer_id = ?, review_comment = ? WHERE id = ?",
-            (session['user_id'], comment or '鏈€氳繃瀹℃牳', credit_id)
+            "UPDATE credits SET status = '已拒绝', review_time = CURRENT_TIMESTAMP, reviewer_id = ?, review_comment = ? WHERE id = ?",
+            (session['user_id'], comment or '未通过审核', credit_id)
         )
-        flash('宸叉嫆缁濇鐢宠', 'warning')
+        flash('已拒绝此申请', 'warning')
     conn.commit()
     conn.close()
     return redirect(url_for('admin_dashboard'))
@@ -297,7 +299,7 @@ def admin_teacher_detail(teacher_id):
     conn = get_db()
     teacher = conn.execute("SELECT * FROM users WHERE id = ?", (teacher_id,)).fetchone()
     if not teacher:
-        flash('鏁欏笀涓嶅瓨鍦?, 'danger')
+        flash('教师不存在', 'danger')
         return redirect(url_for('admin_dashboard'))
     records = conn.execute(
         "SELECT * FROM credits WHERE user_id = ? ORDER BY submit_time DESC",
@@ -324,7 +326,7 @@ def export_data():
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['缂栧彿', '濮撳悕', '宸ュ彿', '鎵€灞炲闄?, '鑾峰鍚嶇О', '鑾峰灞傛', '鑾峰绛夌骇', '鎶樼畻瀛﹀垎', '鐘舵€?, '鎻愪氦鏃堕棿', '瀹℃牳鏃堕棿'])
+    writer.writerow(['编号', '姓名', '工号', '所属学院', '获奖名称', '获奖层次', '获奖等级', '折算学分', '状态', '提交时间', '审核时间'])
     for r in records:
         writer.writerow([r['id'], r['real_name'], r['teacher_id'], r['department'],
                         r['title'], r['award_level'], r['award_grade'],
@@ -332,20 +334,20 @@ def export_data():
                         r['submit_time'], r['review_time']])
     return output.getvalue(), 200, {
         'Content-Type': 'text/csv; charset=utf-8-sig',
-        'Content-Disposition': f'attachment; filename=鏁欏笀鑾峰瀛﹀垎_{datetime.date.today()}.csv'
+        'Content-Disposition': f'attachment; filename=教师获奖学分_{datetime.date.today()}.csv'
     }
 
-# ----- 鍥剧墖璁块棶 -----
+# ----- 图片访问 -----
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# ========== 鍚姩 ==========
+# ========== 启动 ==========
 if __name__ == '__main__':
     print("=" * 50)
-    print("   鏁欏笀鑾峰璇佷功绠＄悊绯荤粺 v1.0")
+    print("   教师获奖证书管理系统 v1.0")
     print("=" * 50)
-    print(f"   鍚姩鍦板潃: http://127.0.0.1:5000")
-    print(f"   绠＄悊鍛樿处鍙? admin / admin123")
+    print(f"   启动地址: http://127.0.0.1:5000")
+    print(f"   管理员账号: admin / admin123")
     print("=" * 50)
     app.run(host='0.0.0.0', port=5000, debug=True)
