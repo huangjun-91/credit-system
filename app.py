@@ -44,7 +44,15 @@ def migrate_db():
     try:
         conn.execute("ALTER TABLE credits ADD COLUMN is_team INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
-        pass  # Column already exists
+        pass
+    try:
+        conn.execute("ALTER TABLE credits ADD COLUMN team_size INTEGER DEFAULT 1")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        conn.execute("ALTER TABLE credits ADD COLUMN semester TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
     conn.close()
 
 def init_db():
@@ -73,6 +81,8 @@ def init_db():
             description TEXT DEFAULT '',
             image_path TEXT DEFAULT '',
             is_team INTEGER DEFAULT 0,
+            team_size INTEGER DEFAULT 1,
+            semester TEXT DEFAULT '',
             status TEXT NOT NULL DEFAULT '待审核',
             submit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             review_time TIMESTAMP,
@@ -246,9 +256,12 @@ def submit_credit():
 
     conn = get_db()
     conn.execute(
-        """INSERT INTO credits (user_id, title, category, award_level, award_grade, credits, description, image_path, is_team, status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '待审核')""",
-        (session['user_id'], title, award_level, award_level, award_grade, credits, description, image_path, int(request.form.get('is_team', 0)))
+        """INSERT INTO credits (user_id, title, category, award_level, award_grade, credits, description, image_path, is_team, team_size, semester, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '待审核')""",
+        (session['user_id'], title, award_level, award_level, award_grade, credits, description, image_path,
+         int(request.form.get('is_team', 0)),
+         int(request.form.get('team_size', 1)),
+         request.form.get('semester', '').strip())
     )
     conn.commit()
     conn.close()
@@ -327,14 +340,14 @@ def export_data():
     conn = get_db()
     records = conn.execute("""
         SELECT c.id, u.real_name, u.teacher_id, u.department, c.title, c.award_level,
-               c.award_grade, c.credits, c.is_team, c.status, c.submit_time, c.review_time
+               c.award_grade, c.credits, c.is_team, c.team_size, c.semester, c.status, c.submit_time, c.review_time
         FROM credits c JOIN users u ON c.user_id = u.id
         ORDER BY u.real_name, c.submit_time
     """).fetchall()
     conn.close()
 
     # Generate CSV as bytes with BOM for Excel compatibility
-    header = ['编号', '姓名', '工号', '所属学院', '获奖名称', '获奖层次', '获奖等级', '折算学分', '是否团队赛', '状态', '提交时间', '审核时间']
+    header = ['编号', '姓名', '工号', '所属学院', '学期', '获奖名称', '获奖层次', '获奖等级', '折算学分', '是否团队赛', '参赛人数', '状态', '提交时间', '审核时间']
     rows = ['\t'.join(header)]
     for r in records:
         rows.append('\t'.join([
@@ -342,11 +355,13 @@ def export_data():
             r['real_name'] or '',
             r['teacher_id'] or '',
             r['department'] or '',
+            r['semester'] or '',
             r['title'] or '',
             r['award_level'] or '',
             r['award_grade'] or '',
             str(r['credits']),
             '是' if r['is_team'] else '否',
+            str(r['team_size'] or 1),
             r['status'] or '',
             r['submit_time'] or '',
             r['review_time'] or ''

@@ -198,6 +198,12 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('submit_credit') }}" enctype="multipart/form-data">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">学期 *</label>
+                            <input type="text" name="semester" class="form-control" placeholder="如：2025年秋季" required>
+                        </div>
+                    </div>
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label fw-medium">获奖名称/赛事名称 *</label>
@@ -238,11 +244,15 @@
                         <div class="row g-3 mb-2">
                             <div class="col-md-6">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_team" id="isTeam" value="1">
+                                    <input class="form-check-input" type="checkbox" name="is_team" id="isTeam" value="1" onchange="toggleTeamSize(this)">
                                     <label class="form-check-label fw-medium" for="isTeam">
                                         是否团队赛
                                     </label>
                                 </div>
+                            </div>
+                            <div class="col-md-4" id="teamSizeGroup" style="display:none;">
+                                <label class="form-label fw-medium">参赛学生人数</label>
+                                <input type="number" name="team_size" class="form-control" value="1" min="1">
                             </div>
                         </div>
                         <div class="col-12">
@@ -374,6 +384,9 @@
                 </table>
             `;
             new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+        function toggleTeamSize(checkbox) {
+            document.getElementById('teamSizeGroup').style.display = checkbox.checked ? 'block' : 'none';
         }
     </script>
 </body>
