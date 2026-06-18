@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 学分管理系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        .login-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2.5rem;
+        }
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+        .btn-primary {
+            background: #4f46e5;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+        .alert {
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="login-card card">
+                    <div class="login-header">
+                        <h3><i class="bi bi-mortarboard-fill"></i></h3>
+                        <h4 class="mb-1">欢迎回来</h4>
+                        <p class="mb-0 small opacity-75">登录学分管理系统</p>
+                    </div>
+                    <div class="login-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-person"></i> 用户名
+                                </label>
+                                <input type="text" name="username" class="form-control" placeholder="输入用户名" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-lock"></i> 密码
+                                </label>
+                                <input type="password" name="password" class="form-control" placeholder="输入密码" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> 登录
+                            </button>
+                        </form>
+                        <div class="text-center mt-3">
+                            <span class="text-muted small">还没有账号？</span>
+                            <a href="{{ url_for('register') }}" class="small">立即注册</a>
+                        </div>
+                        <div class="text-center mt-2">
+                            <span class="text-muted small">管理员默认账号密码：admin / admin123</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
