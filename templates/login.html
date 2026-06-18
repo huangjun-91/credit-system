@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鐧诲綍 - 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</title>
+    <title>登录 - 教师获奖证书管理系统</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -61,8 +61,8 @@
                 <div class="login-card card">
                     <div class="login-header">
                         <h3><i class="bi bi-trophy-fill"></i></h3>
-                        <h4 class="mb-1">娆㈣繋鍥炴潵</h4>
-                        <p class="mb-0 small opacity-75">鐧诲綍鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</p>
+                        <h4 class="mb-1">欢迎回来</h4>
+                        <p class="mb-0 small opacity-75">登录教师获奖证书管理系统</p>
                     </div>
                     <div class="login-body">
                         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -79,25 +79,26 @@
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label fw-medium">
-                                    <i class="bi bi-person"></i> 鐢ㄦ埛鍚?                                </label>
-                                <input type="text" name="username" class="form-control" placeholder="杈撳叆鐢ㄦ埛鍚? required>
+                                    <i class="bi bi-person"></i> 用户名
+                                </label>
+                                <input type="text" name="username" class="form-control" placeholder="输入用户名" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-medium">
-                                    <i class="bi bi-lock"></i> 瀵嗙爜
+                                    <i class="bi bi-lock"></i> 密码
                                 </label>
-                                <input type="password" name="password" class="form-control" placeholder="杈撳叆瀵嗙爜" required>
+                                <input type="password" name="password" class="form-control" placeholder="输入密码" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-box-arrow-in-right"></i> 鐧诲綍
+                                <i class="bi bi-box-arrow-in-right"></i> 登录
                             </button>
                         </form>
                         <div class="text-center mt-3">
-                            <span class="text-muted small">杩樻病鏈夎处鍙凤紵</span>
-                            <a href="{{ url_for('register') }}" class="small">绔嬪嵆娉ㄥ唽</a>
+                            <span class="text-muted small">还没有账号？</span>
+                            <a href="{{ url_for('register') }}" class="small">立即注册</a>
                         </div>
                         <div class="text-center mt-2">
-                            <span class="text-muted small">绠＄悊鍛橀粯璁よ处鍙峰瘑鐮侊細admin / admin123</span>
+                            <span class="text-muted small">管理员默认账号密码：admin / admin123</span>
                         </div>
                     </div>
                 </div>

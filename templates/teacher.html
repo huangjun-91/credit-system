@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鏁欏笀闈㈡澘 - 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</title>
+    <title>教师面板 - 教师获奖证书管理系统</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -129,14 +129,15 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">
-                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i> 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺
+                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i> 教师获奖证书管理系统
             </a>
             <div class="d-flex align-items-center">
                 <span class="me-3 text-muted small">
                     <i class="bi bi-person-circle"></i> {{ session.real_name or session.username }}
                 </span>
                 <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right"></i> 閫€鍑?                </a>
+                    <i class="bi bi-box-arrow-right"></i> 退出
+                </a>
             </div>
         </div>
     </nav>
@@ -152,62 +153,62 @@
             {% endif %}
         {% endwith %}
 
-        <!-- 缁熻鍗＄墖 -->
+        <!-- 统计卡片 -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card">
                     <div class="stat-number">{{ "%.1f"|format(total_credits) }}</div>
-                    <div class="stat-label">鎬绘姌绠楀鍒嗭紙宸查€氳繃锛?/div>
+                    <div class="stat-label">总折算学分（已通过）</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="stat-number">{{ records|selectattr('status', 'equalto', '宸查€氳繃')|list|length }}</div>
-                    <div class="stat-label">宸查€氳繃鏁?/div>
+                    <div class="stat-number">{{ records|selectattr('status', 'equalto', '已通过')|list|length }}</div>
+                    <div class="stat-label">已通过数</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="stat-number">{{ records|selectattr('status', 'equalto', '寰呭鏍?)|list|length }}</div>
-                    <div class="stat-label">寰呭鏍告暟</div>
+                    <div class="stat-number">{{ records|selectattr('status', 'equalto', '待审核')|list|length }}</div>
+                    <div class="stat-label">待审核数</div>
                 </div>
             </div>
         </div>
 
-        <!-- 鎸夎幏濂栧眰娆＄粺璁?-->
+        <!-- 按获奖层次统计 -->
         {% if stats %}
         <div class="row g-3 mb-4">
-            {% for level in ['鍥藉绾?, '鐪侀儴绾?, '甯傚巺绾?, '鏍＄骇', '闄㈢骇'] %}
+            {% for level in ['国家级', '省部级', '市厅级', '校级', '院级'] %}
                 {% set data = stats.get(level, {}) %}
                 <div class="col">
                     <div class="stat-card">
                         <div class="stat-number" style="font-size:1.2rem;">{{ "%.1f"|format(data.get('total', 0)) }}</div>
                         <div class="stat-label" style="font-size:0.75rem;">{{ level }}</div>
-                        <div class="text-muted small">{{ data.get('count', 0) }}椤?/div>
+                        <div class="text-muted small">{{ data.get('count', 0) }}项</div>
                     </div>
                 </div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <!-- 鎻愪氦鏂扮敵璇?-->
+        <!-- 提交新申请 -->
         <div class="card mb-4">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> 鎻愪氦鏂拌幏濂栬瘉涔?/h5>
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> 提交新获奖证书</h5>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('submit_credit') }}" enctype="multipart/form-data">
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <label class="form-label fw-medium">鑾峰鍚嶇О/璧涗簨鍚嶇О *</label>
-                            <input type="text" name="title" class="form-control" placeholder="濡傦細鍏ㄥ浗澶у鐢熸暟瀛﹀缓妯＄珵璧涙寚瀵? required>
+                            <label class="form-label fw-medium">获奖名称/赛事名称 *</label>
+                            <input type="text" name="title" class="form-control" placeholder="如：全国大学生数学建模竞赛指导" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-medium">鎶樼畻瀛﹀垎鏁?*</label>
+                            <label class="form-label fw-medium">折算学分数 *</label>
                             <input type="number" name="credits" class="form-control" value="1" min="0.5" step="0.5">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">鑾峰灞傛 *</label>
+                            <label class="form-label fw-medium">获奖层次 *</label>
                             <select name="award_level" class="form-select" required>
                                 {% for lvl in award_levels %}
                                 <option value="{{ lvl }}">{{ lvl }}</option>
@@ -215,7 +216,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">鑾峰绛夌骇 *</label>
+                            <label class="form-label fw-medium">获奖等级 *</label>
                             <select name="award_grade" class="form-select" required>
                                 {% for grd in award_grades %}
                                 <option value="{{ grd }}">{{ grd }}</option>
@@ -223,15 +224,15 @@
                             </select>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-medium">鑾峰璇存槑 / 鎸囧瀛︾敓淇℃伅</label>
-                            <textarea name="description" class="form-control" rows="2" placeholder="濡傦細鎸囧XX瀛﹂櫌XX绾X鍚嶅鐢燂紝鑾峰緱XX濂?.."></textarea>
+                            <label class="form-label fw-medium">获奖说明 / 指导学生信息</label>
+                            <textarea name="description" class="form-control" rows="2" placeholder="如：指导XX学院XX级XX名学生，获得XX奖..."></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-medium">涓婁紶璇佷功鍥剧墖锛圝PG/PNG/PDF锛?/label>
+                            <label class="form-label fw-medium">上传证书图片（JPG/PNG/PDF）</label>
                             <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
                                 <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #9ca3af;"></i>
-                                <p class="mb-0 text-muted mt-2">鐐瑰嚮涓婁紶璇佷功鍥剧墖鎴栨嫋鎷芥枃浠跺埌姝ゅ尯鍩?/p>
-                                <p class="text-muted small mb-0">鏀寔 JPG銆丳NG銆丟IF銆丳DF锛屾渶澶?16MB</p>
+                                <p class="mb-0 text-muted mt-2">点击上传证书图片或拖拽文件到此区域</p>
+                                <p class="text-muted small mb-0">支持 JPG、PNG、GIF、PDF，最大 16MB</p>
                                 <span id="fileName" class="d-none text-success small mt-2"></span>
                             </div>
                             <input type="file" name="image" id="imageInput" class="d-none" accept="image/*,.pdf"
@@ -239,7 +240,7 @@
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send"></i> 鎻愪氦瀹℃牳
+                                <i class="bi bi-send"></i> 提交审核
                             </button>
                         </div>
                     </div>
@@ -247,10 +248,10 @@
             </div>
         </div>
 
-        <!-- 鐢宠璁板綍 -->
+        <!-- 申请记录 -->
         <div class="card">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-list-check"></i> 鎴戠殑鑾峰璁板綍</h5>
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> 我的获奖记录</h5>
             </div>
             <div class="card-body p-0">
                 {% if records %}
@@ -258,13 +259,13 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>鑾峰鍚嶇О</th>
-                                <th>鑾峰灞傛</th>
-                                <th>鑾峰绛夌骇</th>
-                                <th>鎶樼畻瀛﹀垎</th>
-                                <th>鐘舵€?/th>
-                                <th>鎻愪氦鏃堕棿</th>
-                                <th>鎿嶄綔</th>
+                                <th>获奖名称</th>
+                                <th>获奖层次</th>
+                                <th>获奖等级</th>
+                                <th>折算学分</th>
+                                <th>状态</th>
+                                <th>提交时间</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -275,18 +276,18 @@
                                 <td><span class="grade-tag">{{ r.award_grade }}</span></td>
                                 <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
                                 <td>
-                                    {% if r.status == '寰呭鏍? %}
-                                    <span class="badge badge-status badge-pending"><i class="bi bi-hourglass"></i> 寰呭鏍?/span>
-                                    {% elif r.status == '宸查€氳繃' %}
-                                    <span class="badge badge-status badge-approved"><i class="bi bi-check-circle"></i> 宸查€氳繃</span>
-                                    {% elif r.status == '宸叉嫆缁? %}
-                                    <span class="badge badge-status badge-rejected"><i class="bi bi-x-circle"></i> 宸叉嫆缁?/span>
+                                    {% if r.status == '待审核' %}
+                                    <span class="badge badge-status badge-pending"><i class="bi bi-hourglass"></i> 待审核</span>
+                                    {% elif r.status == '已通过' %}
+                                    <span class="badge badge-status badge-approved"><i class="bi bi-check-circle"></i> 已通过</span>
+                                    {% elif r.status == '已拒绝' %}
+                                    <span class="badge badge-status badge-rejected"><i class="bi bi-x-circle"></i> 已拒绝</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-muted small">{{ r.submit_time[:10] }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-info" onclick="viewDetail({{ r.id }}, '{{ r.title|e }}', '{{ r.award_level|e }}', '{{ r.award_grade|e }}', {{ r.credits }}, '{{ r.description|e }}', '{{ r.status|e }}', '{{ r.review_comment|e }}', '{{ r.image_path|e }}', '{{ r.submit_time[:10]|e }}', '{{ r.review_time[:10] if r.review_time else ''|e }}')">
-                                        <i class="bi bi-eye"></i> 璇︽儏
+                                        <i class="bi bi-eye"></i> 详情
                                     </button>
                                 </td>
                             </tr>
@@ -297,20 +298,20 @@
                 {% else %}
                 <div class="empty-state">
                     <i class="bi bi-inbox"></i>
-                    <p class="mt-3">杩樻病鏈夎幏濂栬褰?/p>
-                    <p class="text-muted small">鍦ㄤ笂鏂规彁浜や綘鐨勭涓€鏉¤幏濂栦俊鎭惂</p>
+                    <p class="mt-3">还没有获奖记录</p>
+                    <p class="text-muted small">在上方提交你的第一条获奖信息吧</p>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- 璇︽儏寮圭獥 -->
+    <!-- 详情弹窗 -->
     <div class="modal fade" id="detailModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">鑾峰璇︽儏</h5>
+                    <h5 class="modal-title">获奖详情</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="detailBody"></div>
@@ -324,7 +325,7 @@
             const area = document.getElementById('uploadArea');
             const fileName = document.getElementById('fileName');
             if (input.files && input.files[0]) {
-                fileName.textContent = '鉁?' + input.files[0].name;
+                fileName.textContent = '✅ ' + input.files[0].name;
                 fileName.classList.remove('d-none');
                 area.classList.add('has-file');
             }
@@ -332,25 +333,25 @@
 
         function viewDetail(id, title, level, grade, credits, desc, status, comment, image, submitTime, reviewTime) {
             const statusMap = {
-                '寰呭鏍?: '<span class="badge badge-status badge-pending"><i class="bi bi-hourglass"></i> 寰呭鏍?/span>',
-                '宸查€氳繃': '<span class="badge badge-status badge-approved"><i class="bi bi-check-circle"></i> 宸查€氳繃</span>',
-                '宸叉嫆缁?: '<span class="badge badge-status badge-rejected"><i class="bi bi-x-circle"></i> 宸叉嫆缁?/span>'
+                '待审核': '<span class="badge badge-status badge-pending"><i class="bi bi-hourglass"></i> 待审核</span>',
+                '已通过': '<span class="badge badge-status badge-approved"><i class="bi bi-check-circle"></i> 已通过</span>',
+                '已拒绝': '<span class="badge badge-status badge-rejected"><i class="bi bi-x-circle"></i> 已拒绝</span>'
             };
             const imageHtml = image ? 
-                `<div class="mt-3"><label class="form-label fw-medium">馃搸 璇佷功鍥剧墖锛?/label><br>
-                <img src="/uploads/${image}" class="preview-image" onclick="window.open(this.src)" alt="璇佷功"></div>` : '';
+                `<div class="mt-3"><label class="form-label fw-medium">📎 证书图片：</label><br>
+                <img src="/uploads/${image}" class="preview-image" onclick="window.open(this.src)" alt="证书"></div>` : '';
 
             document.getElementById('detailBody').innerHTML = `
                 <table class="table table-borderless">
-                    <tr><td class="text-muted" style="width:80px">鑾峰鍚嶇О</td><td class="fw-medium">${title}</td></tr>
-                    <tr><td class="text-muted">鑾峰灞傛</td><td><span class="level-tag">${level}</span></td></tr>
-                    <tr><td class="text-muted">鑾峰绛夌骇</td><td><span class="grade-tag">${grade}</span></td></tr>
-                    <tr><td class="text-muted">鎶樼畻瀛﹀垎</td><td><strong>${credits.toFixed(1)}</strong></td></tr>
-                    <tr><td class="text-muted">璇存槑</td><td>${desc || '鏃?}</td></tr>
-                    <tr><td class="text-muted">鐘舵€?/td><td>${statusMap[status] || status}</td></tr>
-                    <tr><td class="text-muted">鎻愪氦鏃堕棿</td><td>${submitTime}</td></tr>
-                    ${reviewTime ? `<tr><td class="text-muted">瀹℃牳鏃堕棿</td><td>${reviewTime}</td></tr>` : ''}
-                    ${comment ? `<tr><td class="text-muted">瀹℃牳鎰忚</td><td>${comment}</td></tr>` : ''}
+                    <tr><td class="text-muted" style="width:80px">获奖名称</td><td class="fw-medium">${title}</td></tr>
+                    <tr><td class="text-muted">获奖层次</td><td><span class="level-tag">${level}</span></td></tr>
+                    <tr><td class="text-muted">获奖等级</td><td><span class="grade-tag">${grade}</span></td></tr>
+                    <tr><td class="text-muted">折算学分</td><td><strong>${credits.toFixed(1)}</strong></td></tr>
+                    <tr><td class="text-muted">说明</td><td>${desc || '无'}</td></tr>
+                    <tr><td class="text-muted">状态</td><td>${statusMap[status] || status}</td></tr>
+                    <tr><td class="text-muted">提交时间</td><td>${submitTime}</td></tr>
+                    ${reviewTime ? `<tr><td class="text-muted">审核时间</td><td>${reviewTime}</td></tr>` : ''}
+                    ${comment ? `<tr><td class="text-muted">审核意见</td><td>${comment}</td></tr>` : ''}
                     <tr><td colspan="2">${imageHtml}</td></tr>
                 </table>
             `;

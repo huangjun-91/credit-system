@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>绠＄悊闈㈡澘 - 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</title>
+    <title>管理面板 - 教师获奖证书管理系统</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -35,14 +35,15 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">
-                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i> 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺
+                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i> 教师获奖证书管理系统
             </a>
             <div class="d-flex align-items-center">
                 <span class="me-3 text-muted small">
-                    <i class="bi bi-shield-check"></i> 绠＄悊鍛? {{ session.real_name or session.username }}
+                    <i class="bi bi-shield-check"></i> 管理员: {{ session.real_name or session.username }}
                 </span>
                 <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right"></i> 閫€鍑?                </a>
+                    <i class="bi bi-box-arrow-right"></i> 退出
+                </a>
             </div>
         </div>
     </nav>
@@ -58,34 +59,34 @@
             {% endif %}
         {% endwith %}
 
-        <!-- 缁熻 -->
+        <!-- 统计 -->
         <div class="row g-3 mb-4">
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-number">{{ pending|length }}</div>
-                    <div class="stat-label">寰呭鏍哥敵璇?/div>
+                    <div class="stat-label">待审核申请</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-number">{{ all_records|length }}</div>
-                    <div class="stat-label">鎬昏褰曟暟</div>
+                    <div class="stat-label">总记录数</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-number">{{ teachers|length }}</div>
-                    <div class="stat-label">鏁欏笀浜烘暟</div>
+                    <div class="stat-label">教师人数</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-number">
                         <a href="{{ url_for('export_data') }}" class="btn btn-success">
-                            <i class="bi bi-download"></i> 瀵煎嚭 CSV
+                            <i class="bi bi-download"></i> 导出 CSV
                         </a>
                     </div>
-                    <div class="stat-label">瀵煎嚭缁熻鏁版嵁</div>
+                    <div class="stat-label">导出统计数据</div>
                 </div>
             </div>
         </div>
@@ -94,27 +95,28 @@
         <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" role="tab">
-                    <i class="bi bi-hourglass-split"></i> 寰呭鏍?                    {% if pending %}<span class="badge bg-warning ms-1">{{ pending|length }}</span>{% endif %}
+                    <i class="bi bi-hourglass-split"></i> 待审核
+                    {% if pending %}<span class="badge bg-warning ms-1">{{ pending|length }}</span>{% endif %}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" role="tab">
-                    <i class="bi bi-list-columns"></i> 鍏ㄩ儴璁板綍
+                    <i class="bi bi-list-columns"></i> 全部记录
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" id="teachers-tab" data-bs-toggle="tab" data-bs-target="#teachers" role="tab">
-                    <i class="bi bi-people"></i> 鏁欏笀鍒楄〃
+                    <i class="bi bi-people"></i> 教师列表
                 </button>
             </li>
         </ul>
 
         <div class="tab-content">
-            <!-- 寰呭鏍?-->
+            <!-- 待审核 -->
             <div class="tab-pane fade show active" id="pending" role="tabpanel">
                 <div class="card">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> 寰呭鏍哥殑鑾峰鐢宠</h5>
+                        <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> 待审核的获奖申请</h5>
                     </div>
                     <div class="card-body p-0">
                         {% if pending %}
@@ -122,21 +124,21 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>鏁欏笀</th>
-                                        <th>瀛﹂櫌</th>
-                                        <th>鑾峰鍚嶇О</th>
-                                        <th>灞傛</th>
-                                        <th>绛夌骇</th>
-                                        <th>瀛﹀垎</th>
-                                        <th>璇佷功</th>
-                                        <th>鎻愪氦鏃堕棿</th>
-                                        <th>鎿嶄綔</th>
+                                        <th>教师</th>
+                                        <th>学院</th>
+                                        <th>获奖名称</th>
+                                        <th>层次</th>
+                                        <th>等级</th>
+                                        <th>学分</th>
+                                        <th>证书</th>
+                                        <th>提交时间</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for r in pending %}
                                     <tr>
-                                        <td class="fw-medium">{{ r.real_name or '鏈煡' }}</td>
+                                        <td class="fw-medium">{{ r.real_name or '未知' }}</td>
                                         <td><span class="badge bg-light text-dark">{{ r.department or '-' }}</span></td>
                                         <td>{{ r.title }}</td>
                                         <td><span class="level-tag">{{ r.award_level }}</span></td>
@@ -144,15 +146,15 @@
                                         <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
                                         <td>
                                             {% if r.image_path %}
-                                            <img src="/uploads/{{ r.image_path }}" class="preview-thumb" onclick="window.open(this.src)" title="鏌ョ湅澶у浘">
+                                            <img src="/uploads/{{ r.image_path }}" class="preview-thumb" onclick="window.open(this.src)" title="查看大图">
                                             {% else %}
-                                            <span class="text-muted small">鏃?/span>
+                                            <span class="text-muted small">无</span>
                                             {% endif %}
                                         </td>
                                         <td class="small text-muted">{{ r.submit_time[:16] }}</td>
                                         <td style="min-width: 220px;">
                                             <button class="btn btn-sm btn-outline-info mb-1" onclick="showReviewForm({{ r.id }}, '{{ r.title|e }}', '{{ r.real_name|e }}', {{ r.credits }}, '{{ r.description|e }}', '{{ r.award_level|e }}', '{{ r.award_grade|e }}', '{{ r.image_path|e }}')">
-                                                <i class="bi bi-eye"></i> 瀹℃牳
+                                                <i class="bi bi-eye"></i> 审核
                                             </button>
                                         </td>
                                     </tr>
@@ -163,50 +165,50 @@
                         {% else %}
                         <div class="empty-state">
                             <i class="bi bi-check2-circle text-success"></i>
-                            <p class="mt-3">娌℃湁寰呭鏍哥殑鐢宠锛屼竴鍒囧氨缁紒</p>
+                            <p class="mt-3">没有待审核的申请，一切就绪！</p>
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- 鍏ㄩ儴璁板綍 -->
+            <!-- 全部记录 -->
             <div class="tab-pane fade" id="all" role="tabpanel">
                 <div class="card">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="bi bi-list-columns"></i> 鍏ㄩ儴鑾峰璁板綍</h5>
+                        <h5 class="mb-0"><i class="bi bi-list-columns"></i> 全部获奖记录</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>鏁欏笀</th>
-                                        <th>瀛﹂櫌</th>
-                                        <th>鑾峰鍚嶇О</th>
-                                        <th>灞傛</th>
-                                        <th>绛夌骇</th>
-                                        <th>瀛﹀垎</th>
-                                        <th>鐘舵€?/th>
-                                        <th>鎻愪氦鏃堕棿</th>
+                                        <th>教师</th>
+                                        <th>学院</th>
+                                        <th>获奖名称</th>
+                                        <th>层次</th>
+                                        <th>等级</th>
+                                        <th>学分</th>
+                                        <th>状态</th>
+                                        <th>提交时间</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for r in all_records %}
                                     <tr>
-                                        <td class="fw-medium">{{ r.real_name or '鏈煡' }}</td>
+                                        <td class="fw-medium">{{ r.real_name or '未知' }}</td>
                                         <td><span class="badge bg-light text-dark">{{ r.department or '-' }}</span></td>
                                         <td>{{ r.title }}</td>
                                         <td><span class="level-tag">{{ r.award_level }}</span></td>
                                         <td><span class="grade-tag">{{ r.award_grade }}</span></td>
                                         <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
                                         <td>
-                                            {% if r.status == '寰呭鏍? %}
-                                            <span class="badge badge-status badge-pending">寰呭鏍?/span>
-                                            {% elif r.status == '宸查€氳繃' %}
-                                            <span class="badge badge-status badge-approved">宸查€氳繃</span>
-                                            {% elif r.status == '宸叉嫆缁? %}
-                                            <span class="badge badge-status badge-rejected">宸叉嫆缁?/span>
+                                            {% if r.status == '待审核' %}
+                                            <span class="badge badge-status badge-pending">待审核</span>
+                                            {% elif r.status == '已通过' %}
+                                            <span class="badge badge-status badge-approved">已通过</span>
+                                            {% elif r.status == '已拒绝' %}
+                                            <span class="badge badge-status badge-rejected">已拒绝</span>
                                             {% endif %}
                                         </td>
                                         <td class="small text-muted">{{ r.submit_time[:10] }}</td>
@@ -219,41 +221,41 @@
                 </div>
             </div>
 
-            <!-- 鏁欏笀鍒楄〃 -->
+            <!-- 教师列表 -->
             <div class="tab-pane fade" id="teachers" role="tabpanel">
                 <div class="card">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="bi bi-people"></i> 鏁欏笀鍒楄〃</h5>
+                        <h5 class="mb-0"><i class="bi bi-people"></i> 教师列表</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>濮撳悕</th>
-                                        <th>鐢ㄦ埛鍚?/th>
-                                        <th>宸ュ彿</th>
-                                        <th>鑱岀О</th>
-                                        <th>鎵€灞炲闄?/th>
-                                        <th>鎿嶄綔</th>
+                                        <th>姓名</th>
+                                        <th>用户名</th>
+                                        <th>工号</th>
+                                        <th>职称</th>
+                                        <th>所属学院</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for t in teachers %}
                                     <tr>
-                                        <td class="fw-medium">{{ t.real_name or '鏈～' }}</td>
+                                        <td class="fw-medium">{{ t.real_name or '未填' }}</td>
                                         <td>{{ t.id }}</td>
                                         <td>{{ t.teacher_id or '-' }}</td>
                                         <td>{{ t.title or '-' }}</td>
                                         <td>{{ t.department or '-' }}</td>
                                         <td>
                                             <a href="{{ url_for('admin_teacher_detail', teacher_id=t.id) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye"></i> 鏌ョ湅鑾峰
+                                                <i class="bi bi-eye"></i> 查看获奖
                                             </a>
                                         </td>
                                     </tr>
                                     {% else %}
-                                    <tr><td colspan="6" class="text-center text-muted py-4">鏆傛棤鏁欏笀娉ㄥ唽</td></tr>
+                                    <tr><td colspan="6" class="text-center text-muted py-4">暂无教师注册</td></tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -264,12 +266,12 @@
         </div>
     </div>
 
-    <!-- 瀹℃牳寮圭獥 -->
+    <!-- 审核弹窗 -->
     <div class="modal fade" id="reviewModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-clipboard-check"></i> 瀹℃牳鑾峰鐢宠</h5>
+                    <h5 class="modal-title"><i class="bi bi-clipboard-check"></i> 审核获奖申请</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="reviewBody"></div>
@@ -282,34 +284,34 @@
         function showReviewForm(id, title, teacher, credits, desc, awardLevel, awardGrade, image) {
             const imageHtml = image ? 
                 `<div class="mb-3">
-                    <label class="form-label fw-medium">馃搸 璇佷功鍥剧墖锛?/label><br>
-                    <img src="/uploads/${image}" style="max-width:100%;max-height:300px;border-radius:12px;cursor:pointer" onclick="window.open(this.src)" alt="璇佷功">
+                    <label class="form-label fw-medium">📎 证书图片：</label><br>
+                    <img src="/uploads/${image}" style="max-width:100%;max-height:300px;border-radius:12px;cursor:pointer" onclick="window.open(this.src)" alt="证书">
                 </div>` : '';
 
             document.getElementById('reviewBody').innerHTML = `
                 <div class="row mb-3">
-                    <div class="col-6"><strong>鏁欏笀锛?/strong>${teacher}</div>
-                    <div class="col-6"><strong>鑾峰鍚嶇О锛?/strong>${title}</div>
-                    <div class="col-6 mt-2"><strong>鑾峰灞傛锛?/strong>${awardLevel}</div>
-                    <div class="col-6 mt-2"><strong>鑾峰绛夌骇锛?/strong>${awardGrade}</div>
-                    <div class="col-6 mt-2"><strong>鎶樼畻瀛﹀垎锛?/strong>${credits.toFixed(1)}</div>
-                    ${desc ? `<div class="col-12 mt-2"><strong>璇存槑锛?/strong>${desc}</div>` : ''}
+                    <div class="col-6"><strong>教师：</strong>${teacher}</div>
+                    <div class="col-6"><strong>获奖名称：</strong>${title}</div>
+                    <div class="col-6 mt-2"><strong>获奖层次：</strong>${awardLevel}</div>
+                    <div class="col-6 mt-2"><strong>获奖等级：</strong>${awardGrade}</div>
+                    <div class="col-6 mt-2"><strong>折算学分：</strong>${credits.toFixed(1)}</div>
+                    ${desc ? `<div class="col-12 mt-2"><strong>说明：</strong>${desc}</div>` : ''}
                 </div>
                 ${imageHtml}
                 <hr>
                 <form method="POST" action="/admin/review/${id}" id="reviewForm">
                     <div class="mb-3">
-                        <label class="form-label fw-medium">瀹℃牳鎰忚锛堝彲閫夛級</label>
-                        <textarea name="comment" class="form-control" rows="2" placeholder="杈撳叆瀹℃牳鎰忚..."></textarea>
+                        <label class="form-label fw-medium">审核意见（可选）</label>
+                        <textarea name="comment" class="form-control" rows="2" placeholder="输入审核意见..."></textarea>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" name="action" value="approve" class="btn btn-success flex-fill btn-approve"
-                                onclick="return confirm('纭畾閫氳繃姝ょ敵璇凤紵')">
-                            <i class="bi bi-check-circle"></i> 閫氳繃
+                                onclick="return confirm('确定通过此申请？')">
+                            <i class="bi bi-check-circle"></i> 通过
                         </button>
                         <button type="submit" name="action" value="reject" class="btn btn-danger flex-fill btn-reject"
-                                onclick="return confirm('纭畾鎷掔粷姝ょ敵璇凤紵')">
-                            <i class="bi bi-x-circle"></i> 鎷掔粷
+                                onclick="return confirm('确定拒绝此申请？')">
+                            <i class="bi bi-x-circle"></i> 拒绝
                         </button>
                     </div>
                 </form>
