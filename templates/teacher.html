@@ -216,10 +216,14 @@
                                 国家级：一等奖0.5分、二等奖0.3分、三等奖0.2分<br>
                                 市级：一等奖0.3分、二等奖0.2分、三等奖0.1分<br>
                                 县级：一等奖0.1分、二等奖0.075分、三等奖0.05分<br>
-                                <strong>团体奖：</strong>双倍记分，指导教师得分 + 班辅教师得分 = 获奖总分<br>
-                                <small>例：8人获国家一等奖，总分=0.5×2=1，指导教师得0.5，班辅教师得分=0.5×(本班人数÷8)÷2</small>
+                                选择获奖层次与等级后自动匹配计分
                             </div>
-                            <input type="number" name="credits" class="form-control" value="1" min="0" step="any">
+                            <div class="input-group">
+                                <input type="number" name="credits" id="creditsInput" class="form-control" value="0" min="0" step="any" readonly
+                                       style="background:#f0f2f5;cursor:default;">
+                                <span class="input-group-text" id="creditCalcHint" style="font-size:0.75rem;max-width:100px;">选择奖级</span>
+                            </div>
+                        </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">获奖层次 *</label>
@@ -244,15 +248,52 @@
                         <div class="row g-3 mb-2">
                             <div class="col-md-6">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_team" id="isTeam" value="1" onchange="toggleTeamSize(this)">
+                                    <input class="form-check-input" type="checkbox" name="is_team" id="isTeam" value="1" onchange="toggleTeamMode(this)">
                                     <label class="form-check-label fw-medium" for="isTeam">
                                         是否团队赛
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-md-4" id="teamSizeGroup" style="display:none;">
-                                <label class="form-label fw-medium">参赛学生人数</label>
-                                <input type="number" name="team_size" class="form-control" value="1" min="1">
+                        </div>
+                        <!-- 团队赛选项 -->
+                        <div id="teamOptions" style="display:none;">
+                            <div class="row g-3 mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">参赛学生总人数</label>
+                                    <input type="number" name="team_size" id="teamSize" class="form-control" value="2" min="1" onchange="calcTeamCredit()">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-2">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="teacher_type" id="typeGuide" value="guide" onchange="toggleTeacherType()">
+                                        <label class="form-check-label fw-medium" for="typeGuide">指导教师</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="teacher_type" id="typeAssistant" value="assistant" onchange="toggleTeacherType()">
+                                        <label class="form-check-label fw-medium" for="typeAssistant">班辅教师</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 指导教师人数 -->
+                            <div class="row g-3 mb-2" id="guideCountGroup" style="display:none;">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">指导教师人数</label>
+                                    <input type="number" name="guide_count" id="guideCount" class="form-control" value="1" min="1" onchange="calcTeamCredit()">
+                                    <small class="text-muted">得分 = 单人基础分 ÷ 指导教师人数</small>
+                                </div>
+                            </div>
+                            <!-- 班辅教师输入 -->
+                            <div class="row g-3 mb-2" id="assistantGroup" style="display:none;">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">本班参赛学生数</label>
+                                    <input type="number" name="class_students" id="classStudents" class="form-control" value="1" min="1" onchange="calcTeamCredit()">
+                                    <small class="text-muted">得分 = 单人基础分 ÷ 总人数 × 本班人数 ÷ 2</small>
+                                </div>
+                            </div>
+                            <div class="mb-2" id="teamCalcResult" style="color:var(--primary-color);font-weight:600;">
                             </div>
                         </div>
                         <div class="col-12">
@@ -385,9 +426,110 @@
             `;
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
-        function toggleTeamSize(checkbox) {
-            document.getElementById('teamSizeGroup').style.display = checkbox.checked ? 'block' : 'none';
+        // ===== 自动计分系统 =====
+        const SCORE_MAP = {
+            '国家级': { '一等奖（第1-2名）': 0.5, '二等奖（第3-5名）': 0.3, '三等奖（第6-8名）': 0.2 },
+            '市级':   { '一等奖（第1-2名）': 0.3, '二等奖（第3-5名）': 0.2, '三等奖（第6-8名）': 0.1 },
+            '区县级': { '一等奖（第1-2名）': 0.1, '二等奖（第3-5名）': 0.075, '三等奖（第6-8名）': 0.05 }
+        };
+
+        function getBaseScore() {
+            const level = document.querySelector('select[name="award_level"]')?.value;
+            const grade = document.querySelector('select[name="award_grade"]')?.value;
+            if (SCORE_MAP[level] && SCORE_MAP[level][grade] !== undefined) {
+                return SCORE_MAP[level][grade];
+            }
+            return 0;
         }
+
+        function updateCreditsDisplay() {
+            const isTeam = document.getElementById('isTeam').checked;
+            const base = getBaseScore();
+            const hint = document.getElementById('creditCalcHint');
+            const input = document.getElementById('creditsInput');
+
+            if (base === 0) {
+                input.value = '';
+                hint.textContent = '选择奖级';
+                return;
+            }
+
+            if (!isTeam) {
+                // 单人：直接填基础分
+                input.value = base;
+                hint.textContent = base + '分(单人)';
+                document.getElementById('creditCalcHint').textContent = base + '分(单人)';
+                return;
+            }
+
+            // 团队赛：通过 calcTeamCredit 计算
+            calcTeamCredit();
+        }
+
+        function calcTeamCredit() {
+            const base = getBaseScore();
+            const input = document.getElementById('creditsInput');
+            const hint = document.getElementById('creditCalcHint');
+            const result = document.getElementById('teamCalcResult');
+
+            if (base === 0) {
+                input.value = '';
+                hint.textContent = '选择奖级';
+                result.innerHTML = '';
+                return;
+            }
+
+            // 选手动输入的团队得分
+            let finalCredit = 0;
+            const totalStudents = parseInt(document.getElementById('teamSize')?.value) || 0;
+            const teacherType = document.querySelector('input[name="teacher_type"]:checked')?.value;
+
+            if (teacherType === 'guide') {
+                const guideCount = parseInt(document.getElementById('guideCount')?.value) || 1;
+                finalCredit = base / guideCount;
+                result.innerHTML = `指导教师计算：${base} ÷ ${guideCount} = <strong>${finalCredit.toFixed(4)}分</strong>`;
+            } else if (teacherType === 'assistant') {
+                const classStudents = parseInt(document.getElementById('classStudents')?.value) || 0;
+                if (totalStudents > 0) {
+                    finalCredit = base / totalStudents * classStudents / 2;
+                    result.innerHTML = `班辅教师计算：${base} ÷ ${totalStudents} × ${classStudents} ÷ 2 = <strong>${finalCredit.toFixed(4)}分</strong>`;
+                } else {
+                    result.innerHTML = '请填写参赛学生总人数';
+                }
+            } else {
+                result.innerHTML = '请选择指导教师或班辅教师';
+                return;
+            }
+
+            input.value = finalCredit.toFixed(4);
+            hint.textContent = finalCredit.toFixed(4) + '分(团队)';
+        }
+
+        function toggleTeamMode(checkbox) {
+            const teamOptions = document.getElementById('teamOptions');
+            teamOptions.style.display = checkbox.checked ? 'block' : 'none';
+            if (!checkbox.checked) {
+                // 取消团队赛时清空结果
+                document.getElementById('teamCalcResult').innerHTML = '';
+            }
+            updateCreditsDisplay();
+        }
+
+        function toggleTeacherType() {
+            const type = document.querySelector('input[name="teacher_type"]:checked')?.value;
+            document.getElementById('guideCountGroup').style.display = type === 'guide' ? 'block' : 'none';
+            document.getElementById('assistantGroup').style.display = type === 'assistant' ? 'block' : 'none';
+            if (type) calcTeamCredit();
+        }
+
+        // 监听获奖层次/等级变化自动更新
+        document.addEventListener('DOMContentLoaded', function() {
+            const levelSelect = document.querySelector('select[name="award_level"]');
+            const gradeSelect = document.querySelector('select[name="award_grade"]');
+            if (levelSelect) levelSelect.addEventListener('change', updateCreditsDisplay);
+            if (gradeSelect) gradeSelect.addEventListener('change', updateCreditsDisplay);
+            updateCreditsDisplay();
+        });
     </script>
 </body>
 </html>
