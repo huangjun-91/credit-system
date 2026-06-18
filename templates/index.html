@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学分管理系统</title>
+    <title>鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4f46e5;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
         }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -85,23 +82,22 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">
-                <i class="bi bi-mortarboard-fill" style="color: var(--primary-color);"></i>
-                学分管理系统
+                <i class="bi bi-trophy-fill" style="color: var(--primary-color);"></i>
+                鏁欏笀鑾峰璇佷功绠＄悊绯荤粺
             </a>
             <div>
                 {% if session.user_id %}
                     <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm me-2">
-                        <i class="bi bi-house"></i> 首页
+                        <i class="bi bi-house"></i> 棣栭〉
                     </a>
                     <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> 退出
-                    </a>
+                        <i class="bi bi-box-arrow-right"></i> 閫€鍑?                    </a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-box-arrow-in-right"></i> 登录
+                        <i class="bi bi-box-arrow-in-right"></i> 鐧诲綍
                     </a>
                     <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-sm ms-2">
-                        <i class="bi bi-person-plus"></i> 注册
+                        <i class="bi bi-person-plus"></i> 娉ㄥ唽
                     </a>
                 {% endif %}
             </div>
@@ -110,15 +106,15 @@
 
     <div class="hero-section">
         <div class="container">
-            <h1><i class="bi bi-mortarboard-fill"></i> 学分管理系统</h1>
-            <p>轻松记录、管理你的学分 — 上传证明材料，一键提交，实时查看审核进度</p>
+            <h1><i class="bi bi-trophy-fill"></i> 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</h1>
+            <p>杞绘澗鐧昏鎸囧瀛︾敓鑾峰淇℃伅 鈥?涓婁紶璇佷功鍥剧墖锛岄€夋嫨鑾峰灞傛涓庣瓑绾э紝涓€閿彁浜ゅ鏍?/p>
             <div class="mt-4">
                 {% if not session.user_id %}
                     <a href="{{ url_for('login') }}" class="btn btn-light btn-lg me-2">
-                        <i class="bi bi-box-arrow-in-right"></i> 立即登录
+                        <i class="bi bi-box-arrow-in-right"></i> 绔嬪嵆鐧诲綍
                     </a>
                     <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
-                        <i class="bi bi-person-plus"></i> 注册账号
+                        <i class="bi bi-person-plus"></i> 娉ㄥ唽璐﹀彿
                     </a>
                 {% endif %}
             </div>
@@ -129,23 +125,23 @@
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="bi bi-cloud-upload"></i></div>
-                    <h4>上传证明</h4>
-                    <p class="text-muted">支持图片、PDF等格式，一键上传学分证明材料，随时随地提交</p>
+                    <div class="feature-icon"><i class="bi bi-image"></i></div>
+                    <h4>璇佷功涓婁紶</h4>
+                    <p class="text-muted">鏀寔鍥剧墖銆丳DF绛夋牸寮忥紝涓€閿笂浼犺幏濂栬瘉涔﹀師浠讹紝瀹炴椂鎻愪氦瀹℃牳</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="bi bi-search-heart"></i></div>
-                    <h4>自主登记</h4>
-                    <p class="text-muted">学生自主登记学分，选择类别（德智体美劳+创新创业），轻松管理</p>
+                    <div class="feature-icon"><i class="bi bi-trophy"></i></div>
+                    <h4>鑾峰鐧昏</h4>
+                    <p class="text-muted">鐧昏鎸囧瀛︾敓鑾峰淇℃伅锛岄€夋嫨鑾峰灞傛锛堝浗瀹?鐪?甯?鏍★級涓庣瓑绾э紝鑷姩鎶樼畻瀛﹀垎</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
                     <div class="feature-icon"><i class="bi bi-bar-chart-line"></i></div>
-                    <h4>实时统计</h4>
-                    <p class="text-muted">分类查看学分汇总，管理员一键导出Excel，期末统计不再头疼</p>
+                    <h4>瀛﹀垎缁熻</h4>
+                    <p class="text-muted">鎸夎幏濂栧眰娆℃眹鎬绘姌绠楀鍒嗭紝绠＄悊鍛樹竴閿鍑篍xcel锛岃瘎浼樿瘎鍏堜笉鍐嶅ご鐤?/p>
                 </div>
             </div>
         </div>

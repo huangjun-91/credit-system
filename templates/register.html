@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册 - 学分管理系统</title>
+    <title>娉ㄥ唽 - 鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -57,12 +57,12 @@
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <div class="register-card card">
                     <div class="register-header">
                         <h3><i class="bi bi-person-plus-fill"></i></h3>
-                        <h4 class="mb-1">注册新账号</h4>
-                        <p class="mb-0 small opacity-75">加入学分管理系统</p>
+                        <h4 class="mb-1">娉ㄥ唽鏂拌处鍙?/h4>
+                        <p class="mb-0 small opacity-75">鍔犲叆鏁欏笀鑾峰璇佷功绠＄悊绯荤粺</p>
                     </div>
                     <div class="register-body">
                         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -79,35 +79,39 @@
                         <form method="POST">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-person"></i> 用户名 *</label>
-                                    <input type="text" name="username" class="form-control" placeholder="登录用用户名" required>
+                                    <label class="form-label fw-medium"><i class="bi bi-person"></i> 鐢ㄦ埛鍚?*</label>
+                                    <input type="text" name="username" class="form-control" placeholder="鐧诲綍鐢ㄧ敤鎴峰悕" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-lock"></i> 密码 *</label>
-                                    <input type="password" name="password" class="form-control" placeholder="设置密码" required>
+                                    <label class="form-label fw-medium"><i class="bi bi-lock"></i> 瀵嗙爜 *</label>
+                                    <input type="password" name="password" class="form-control" placeholder="璁剧疆瀵嗙爜" required>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-person-badge"></i> 真实姓名</label>
-                                    <input type="text" name="real_name" class="form-control" placeholder="真实姓名">
+                                    <label class="form-label fw-medium"><i class="bi bi-person-badge"></i> 鐪熷疄濮撳悕</label>
+                                    <input type="text" name="real_name" class="form-control" placeholder="鐪熷疄濮撳悕">
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-qr-code"></i> 学号</label>
-                                    <input type="text" name="student_id" class="form-control" placeholder="学号">
+                                    <label class="form-label fw-medium"><i class="bi bi-qr-code"></i> 宸ュ彿</label>
+                                    <input type="text" name="teacher_id" class="form-control" placeholder="鏁欏笀宸ュ彿">
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-people"></i> 班级</label>
-                                    <input type="text" name="class_name" class="form-control" placeholder="班级">
+                                    <label class="form-label fw-medium"><i class="bi bi-mortarboard"></i> 鑱岀О</label>
+                                    <input type="text" name="title" class="form-control" placeholder="濡傦細鏁欐巿銆佸壇鏁欐巿銆佽甯?>
                                 </div>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium"><i class="bi bi-building"></i> 鎵€灞炲闄?閮ㄩ棬</label>
+                                <input type="text" name="department" class="form-control" placeholder="濡傦細璁＄畻鏈哄闄€佹暀鍔″">
+                            </div>
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-person-plus"></i> 注册
+                                <i class="bi bi-person-plus"></i> 娉ㄥ唽
                             </button>
                         </form>
                         <div class="text-center mt-3">
-                            <span class="text-muted small">已有账号？</span>
-                            <a href="{{ url_for('login') }}" class="small">去登录</a>
+                            <span class="text-muted small">宸叉湁璐﹀彿锛?/span>
+                            <a href="{{ url_for('login') }}" class="small">鍘荤櫥褰?/a>
                         </div>
                     </div>
                 </div>
