@@ -313,8 +313,6 @@ def admin_teacher_detail(teacher_id):
 @app.route('/admin/export')
 @admin_required
 def export_data():
-    import csv
-    import io
     conn = get_db()
     records = conn.execute("""
         SELECT c.id, u.real_name, u.teacher_id, u.department, c.title, c.award_level,
