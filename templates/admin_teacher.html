@@ -46,7 +46,7 @@
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="stat-number">{{ "%.1f"|format(total_credits) }}</div>
+                    <div class="stat-number">{{ "%.4f"|format(total_credits) }}</div>
                     <div class="stat-label">总折算学分（已通过）</div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                 {% set data = stats.get(level, {}) %}
                 <div class="col">
                     <div class="stat-card">
-                        <div class="stat-number" style="font-size:1.2rem;">{{ "%.1f"|format(data.get('total', 0)) }}</div>
+                        <div class="stat-number" style="font-size:1.2rem;">{{ "%.4f"|format(data.get('total', 0)) }}</div>
                         <div class="stat-label" style="font-size:0.75rem;">{{ level }}</div>
                         <div class="text-muted small">{{ data.get('count', 0) }}项</div>
                     </div>
@@ -103,7 +103,7 @@
                                 <td class="fw-medium">{{ r.title }}</td>
                                 <td><span class="level-tag">{{ r.award_level }}</span></td>
                                 <td><span class="grade-tag">{{ r.award_grade }}</span></td>
-                                <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
+                                <td><strong>{{ "%.4f"|format(r.credits) }}</strong></td>
                                 <td>
                                     {% if r.status == '待审核' %}
                                     <span class="badge badge-status badge-pending">待审核</span>

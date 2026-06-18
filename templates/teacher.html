@@ -157,7 +157,7 @@
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="stat-number">{{ "%.1f"|format(total_credits) }}</div>
+                    <div class="stat-number">{{ "%.4f"|format(total_credits) }}</div>
                     <div class="stat-label">总折算学分（已通过）</div>
                 </div>
             </div>
@@ -302,7 +302,7 @@
                                 <td class="fw-medium">{{ r.title }}</td>
                                 <td><span class="level-tag">{{ r.award_level }}</span></td>
                                 <td><span class="grade-tag">{{ r.award_grade }}</span></td>
-                                <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
+                                <td><strong>{{ "%.4f"|format(r.credits) }}</strong></td>
                                 <td>
                                     {% if r.status == '待审核' %}
                                     <span class="badge badge-status badge-pending"><i class="bi bi-hourglass"></i> 待审核</span>
@@ -374,7 +374,7 @@
                     <tr><td class="text-muted" style="width:80px">获奖名称</td><td class="fw-medium">${title}</td></tr>
                     <tr><td class="text-muted">获奖层次</td><td><span class="level-tag">${level}</span></td></tr>
                     <tr><td class="text-muted">获奖等级</td><td><span class="grade-tag">${grade}</span></td></tr>
-                    <tr><td class="text-muted">折算学分</td><td><strong>${credits.toFixed(1)}</strong></td></tr>
+                    <tr><td class="text-muted">折算学分</td><td><strong>${credits.toFixed(4)}</strong></td></tr>
                     <tr><td class="text-muted">说明</td><td>${desc || '无'}</td></tr>
                     <tr><td class="text-muted">状态</td><td>${statusMap[status] || status}</td></tr>
                     <tr><td class="text-muted">提交时间</td><td>${submitTime}</td></tr>

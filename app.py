@@ -359,7 +359,7 @@ def export_data():
             r['title'] or '',
             r['award_level'] or '',
             r['award_grade'] or '',
-            str(r['credits']),
+            f'{r["credits"]:.4f}',
             '是' if r['is_team'] else '否',
             str(r['team_size'] or 1),
             r['status'] or '',

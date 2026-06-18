@@ -143,7 +143,7 @@
                                         <td>{{ r.title }}</td>
                                         <td><span class="level-tag">{{ r.award_level }}</span></td>
                                         <td><span class="grade-tag">{{ r.award_grade }}</span></td>
-                                        <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
+                                        <td><strong>{{ "%.4f"|format(r.credits) }}</strong></td>
                                         <td>
                                             {% if r.image_path %}
                                             <img src="/uploads/{{ r.image_path }}" class="preview-thumb" onclick="window.open(this.src)" title="查看大图">
@@ -201,7 +201,7 @@
                                         <td>{{ r.title }}</td>
                                         <td><span class="level-tag">{{ r.award_level }}</span></td>
                                         <td><span class="grade-tag">{{ r.award_grade }}</span></td>
-                                        <td><strong>{{ "%.1f"|format(r.credits) }}</strong></td>
+                                        <td><strong>{{ "%.4f"|format(r.credits) }}</strong></td>
                                         <td>
                                             {% if r.status == '待审核' %}
                                             <span class="badge badge-status badge-pending">待审核</span>
@@ -294,7 +294,7 @@
                     <div class="col-6"><strong>获奖名称：</strong>${title}</div>
                     <div class="col-6 mt-2"><strong>获奖层次：</strong>${awardLevel}</div>
                     <div class="col-6 mt-2"><strong>获奖等级：</strong>${awardGrade}</div>
-                    <div class="col-6 mt-2"><strong>折算学分：</strong>${credits.toFixed(1)}</div>
+                    <div class="col-6 mt-2"><strong>折算学分：</strong>${credits.toFixed(4)}</div>
                     ${desc ? `<div class="col-12 mt-2"><strong>说明：</strong>${desc}</div>` : ''}
                 </div>
                 ${imageHtml}
