@@ -57,7 +57,7 @@
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-7">
+            <div class="col-md-5">
                 <div class="register-card card">
                     <div class="register-header">
                         <h3><i class="bi bi-person-plus-fill"></i></h3>
@@ -77,33 +77,13 @@
                         {% endwith %}
 
                         <form method="POST">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-person"></i> 用户名 *</label>
-                                    <input type="text" name="username" class="form-control" placeholder="登录用用户名" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-lock"></i> 密码 *</label>
-                                    <input type="password" name="password" class="form-control" placeholder="设置密码" required>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-person-badge"></i> 真实姓名</label>
-                                    <input type="text" name="real_name" class="form-control" placeholder="真实姓名">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-qr-code"></i> 工号</label>
-                                    <input type="text" name="teacher_id" class="form-control" placeholder="教师工号">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-medium"><i class="bi bi-mortarboard"></i> 职称</label>
-                                    <input type="text" name="title" class="form-control" placeholder="如：教授、副教授、讲师">
-                                </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium"><i class="bi bi-person"></i> 用户名（真实姓名）*</label>
+                                <input type="text" name="username" class="form-control" placeholder="请输入真实姓名" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-medium"><i class="bi bi-building"></i> 所属学院/部门</label>
-                                <input type="text" name="department" class="form-control" placeholder="如：计算机学院、教务处">
+                                <label class="form-label fw-medium"><i class="bi bi-lock"></i> 密码 *</label>
+                                <input type="password" name="password" class="form-control" placeholder="设置密码" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="bi bi-person-plus"></i> 注册

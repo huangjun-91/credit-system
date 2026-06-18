@@ -162,10 +162,10 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
-        real_name = request.form.get('real_name', '').strip()
-        teacher_id = request.form.get('teacher_id', '').strip()
-        title = request.form.get('title', '').strip()
-        department = request.form.get('department', '').strip()
+        real_name = username  # Use username as real_name
+        teacher_id = ''
+        title = ''
+        department = ''
 
         if not username or not password:
             flash('用户名和密码不能为空', 'danger')
