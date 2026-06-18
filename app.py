@@ -333,8 +333,10 @@ def export_data():
                         r['credits'], r['status'],
                         r['submit_time'], r['review_time']])
     filename = f'teacher_credits_{datetime.date.today()}.csv'
-    return output.getvalue(), 200, {
-        'Content-Type': 'text/csv; charset=utf-8-sig',
+    # Use UTF-8 BOM for Excel compatibility
+    csv_bytes = output.getvalue().encode('utf-8-sig')
+    return csv_bytes, 200, {
+        'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': f"attachment; filename=\"{filename}\""
     }
 
