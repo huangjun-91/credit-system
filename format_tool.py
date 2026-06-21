@@ -440,24 +440,37 @@ def index():
 
         try:
             doc = Document(file)
+
+            # 打印文档信息协助调试
+            para_count = len(doc.paragraphs)
+            first_text = doc.paragraphs[0].text.strip() if doc.paragraphs else ''
+            print(f"[FORMAT] Processing: {file.filename}, paragraphs={para_count}, first_line='{first_text[:30]}'")
+
             formatter = DocumentFormatter(doc, config)
             formatter.run()
 
             output = io.BytesIO()
             doc.save(output)
+            size_kb = output.tell() / 1024
             output.seek(0)
 
             original_name = file.filename
             if original_name.lower().endswith('.docx'):
                 original_name = original_name[:-5]
             mode_label = config['name']
-            output_name = f"{original_name}_{mode_label}.docx"
 
-            return send_file(
-                output, as_attachment=True,
-                download_name=output_name,
-                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            )
+            # 用安全文件名（不含特殊字符）
+            safe_name = re.sub(r'[\\/*?:"<>|]', '_', f"{original_name}_{mode_label}")
+            output_name = f"{safe_name}.docx"
+
+            print(f"[FORMAT] Done: {size_kb:.1f}KB, output: {output_name}")
+
+            from flask import make_response
+            response = make_response(output.read())
+            response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            response.headers['Content-Disposition'] = f'attachment; filename="{output_name}"'
+            response.headers['Content-Length'] = output.tell()
+            return response
         except Exception as e:
             flash(f'处理出错: {str(e)}', 'error')
             return render_template('format.html')
