@@ -70,8 +70,8 @@ KETI_CONFIG = {
     'body_font': '宋体', 'body_size': 12,
     'body_first_indent': 2,
 
-    # 表格用字
-    'table_font': '宋体', 'table_size': 10.5,    # 五号
+    # 表格用字（同正文：宋体小四）
+    'table_font': '宋体', 'table_size': 12,       # 小四号
 
     # 参考文献
     'ref_font': '宋体', 'ref_size': 10.5,         # 五号
