@@ -182,38 +182,52 @@ def set_para_fixed_spacing(para, pt_value):
 def format_table(table, config):
     """格式化表格：设置表格内字体、边框"""
     try:
-        # 设置表格对齐方式
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    except Exception:
+        pass
 
-        for row in table.rows:
-            for cell in row.cells:
+    for row_idx, row in enumerate(table.rows):
+        for cell_idx, cell in enumerate(row.cells):
+            try:
                 for para in cell.paragraphs:
                     try:
                         para.paragraph_format.first_line_indent = Pt(0)
                         para.paragraph_format.space_before = Pt(0)
                         para.paragraph_format.space_after = Pt(0)
+                    except Exception:
+                        pass
+                    try:
                         para.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     except Exception:
                         pass
 
-                    for run in para.runs:
+                    try:
+                        t = para.text.strip() if para.text else ''
+                    except Exception:
+                        t = ''
+
+                    for run in list(para.runs):
                         try:
                             set_run_font(run, config['table_font'], config['table_size'], False)
                         except Exception:
                             pass
-                    if not para.runs:
+
+                    if not para.runs and t:
                         try:
-                            run = para.add_run(para.text if para.text else '')
+                            run = para.add_run(t)
                             set_run_font(run, config['table_font'], config['table_size'], False)
                         except Exception:
                             pass
 
                     try:
-                        set_para_fixed_spacing(para, max(config.get('line_spacing_fixed', 20) - 4, 14))
+                        sp = max(config.get('line_spacing_fixed', 20) - 4, 14)
+                        set_para_fixed_spacing(para, sp)
                     except Exception:
                         pass
+            except Exception:
+                continue
 
-        # 设置表格边框（0.5磅实线）
+    try:
         tbl = table._tbl
         tblPr = tbl.tblPr if tbl.tblPr is not None else OxmlElement('w:tblPr')
         borders = OxmlElement('w:tblBorders')
@@ -224,13 +238,12 @@ def format_table(table, config):
             elem.set(qn('w:space'), '0')
             elem.set(qn('w:color'), '000000')
             borders.append(elem)
-        # 清除旧边框
         old = tblPr.find(qn('w:tblBorders'))
         if old is not None:
             tblPr.remove(old)
         tblPr.append(borders)
     except Exception:
-        pass  # 表格格式化失败不中断整体流程
+        pass
 
 
 def add_simple_page_number(doc, font_size=10):
@@ -398,31 +411,66 @@ class DocumentFormatter:
 
             # ---- 应用格式 ----
             for run in para.runs:
-                set_run_font(run, font_name, font_size, bold)
+                try:
+                    set_run_font(run, font_name, font_size, bold)
+                except Exception:
+                    pass
             if not para.runs:
-                run = para.add_run(text)
-                set_run_font(run, font_name, font_size, bold)
+                try:
+                    run = para.add_run(text)
+                    set_run_font(run, font_name, font_size, bold)
+                except Exception:
+                    pass
 
-            para.alignment = alignment
+            try:
+                para.alignment = alignment
+            except Exception:
+                pass
+
             if first_indent > 0:
-                para.paragraph_format.first_line_indent = Pt(font_size * first_indent)
+                try:
+                    para.paragraph_format.first_line_indent = Pt(font_size * first_indent)
+                except Exception:
+                    pass
             else:
-                para.paragraph_format.first_line_indent = Pt(0)
+                try:
+                    para.paragraph_format.first_line_indent = Pt(0)
+                except Exception:
+                    pass
 
             # 行距
-            set_para_fixed_spacing(para, self.cfg['line_spacing_fixed'])
-            para.paragraph_format.space_before = Pt(self.cfg.get('para_space_before', 0))
-            para.paragraph_format.space_after = Pt(self.cfg.get('para_space_after', 0))
+            try:
+                set_para_fixed_spacing(para, self.cfg['line_spacing_fixed'])
+            except Exception:
+                pass
+            try:
+                para.paragraph_format.space_before = Pt(self.cfg.get('para_space_before', 0))
+            except Exception:
+                pass
+            try:
+                para.paragraph_format.space_after = Pt(self.cfg.get('para_space_after', 0))
+            except Exception:
+                pass
 
             # 1-3级标题加段前间距
             if not in_ref_section and level in (1, 2, 3):
-                para.paragraph_format.space_before = Pt(self.cfg['line_spacing_fixed'])
-                para.paragraph_format.space_after = Pt(self.cfg['line_spacing_fixed'])
+                try:
+                    para.paragraph_format.space_before = Pt(self.cfg['line_spacing_fixed'])
+                except Exception:
+                    pass
+                try:
+                    para.paragraph_format.space_after = Pt(self.cfg['line_spacing_fixed'])
+                except Exception:
+                    pass
 
     def format_tables(self):
         """格式化文档中所有表格"""
-        for table in self.doc.tables:
-            format_table(table, self.cfg)
+        for idx, table in enumerate(self.doc.tables):
+            try:
+                format_table(table, self.cfg)
+            except Exception as e:
+                print(f"[FORMAT] WARN: table[{idx}] failed: {e}")
+                continue
 
     def add_page_number(self):
         style = self.cfg.get('page_number_style', 'simple')
