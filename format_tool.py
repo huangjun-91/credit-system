@@ -242,60 +242,56 @@ class DocumentFormatter:
         return False
 
     def format_paragraphs(self):
-        is_first_content = True
-        is_after_title = False
-        title_done = False
+        has_met_content = False        # 是否遇到过非空段落
+        title_handled = False          # 文件主标题已处理
+        danwei_handled = False         # 承担单位已处理
         in_ref_section = False
-        h5_pattern = re.compile(r'^①')
 
         for idx, para in enumerate(self.doc.paragraphs):
             text = para.text.strip()
             if not text:
                 continue
 
-            # ---- 检测是否为参考文献段落 ----
+            # ---- 参考文献段 ----
             if self.is_reference_title(text):
                 in_ref_section = True
-
             if in_ref_section:
+                is_ref_title = self.is_reference_title(text)
                 font_name = self.cfg.get('ref_font', self.cfg['body_font'])
                 font_size = self.cfg.get('ref_size', self.cfg['body_size'])
-                bold = self.is_reference_title(text)
+                bold = is_ref_title
                 alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                 first_indent = 0
             else:
+                # ---- 检测文本类型 ----
                 level = self.detect_level(text)
 
-                # ---- 标题检测 ----
+                # 1) 文件标题：第一个内容的段落（非层级标题、非参考文献）
                 is_title = False
-                if is_first_content:
+                if not has_met_content and level == 0 and not self.is_reference_entry(text):
                     is_title = True
-                    is_first_content = False
-                    is_after_title = True
-                    title_done = True
+                    has_met_content = True
+                    title_handled = True
 
-                # ---- 承担单位检测 ----
-                if is_after_title and not title_done:
-                    if self.is_danwei_line(text, True):
-                        # 承担单位：宋体居中
-                        for run in para.runs:
-                            set_run_font(run, self.cfg['body_font'], self.cfg['body_size'], False)
-                        if not para.runs:
-                            run = para.add_run(text)
-                            set_run_font(run, self.cfg['body_font'], self.cfg['body_size'], False)
-                        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                        para.paragraph_format.first_line_indent = Pt(0)
-                        set_para_fixed_spacing(para, self.cfg['line_spacing_fixed'])
-                        para.paragraph_format.space_before = Pt(self.cfg.get('para_space_before', 0))
-                        para.paragraph_format.space_after = Pt(self.cfg.get('para_space_after', 0))
-                        is_after_title = False
-                        continue
+                # 2) 承担单位：标题后的下一个非空段落（含单位关键词）
+                is_danwei = False
+                if title_handled and not danwei_handled and level == 0:
+                    if self.is_danwei_line(text, True) or (len(text) < 40 and not text.startswith('一')):
+                        # 标题后第一个短段落视为承担单位
+                        is_danwei = True
+                        danwei_handled = True
 
-                # ---- 根据层级设置 ----
+                # ---- 根据类型设置格式 ----
                 if is_title:
                     font_name = self.cfg['title_font']
                     font_size = self.cfg['title_size']
                     bold = self.cfg['title_bold']
+                    alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    first_indent = 0
+                elif is_danwei:
+                    font_name = self.cfg['body_font']
+                    font_size = self.cfg['body_size']
+                    bold = False
                     alignment = WD_ALIGN_PARAGRAPH.CENTER
                     first_indent = 0
                 elif level == 1:
@@ -335,7 +331,7 @@ class DocumentFormatter:
                     alignment = self.cfg.get('align_body', WD_ALIGN_PARAGRAPH.JUSTIFY)
                     first_indent = self.cfg.get('body_first_indent', 2)
 
-            # ---- 应用 ----
+            # ---- 应用格式 ----
             for run in para.runs:
                 set_run_font(run, font_name, font_size, bold)
             if not para.runs:
@@ -343,7 +339,6 @@ class DocumentFormatter:
                 set_run_font(run, font_name, font_size, bold)
 
             para.alignment = alignment
-
             if first_indent > 0:
                 para.paragraph_format.first_line_indent = Pt(font_size * first_indent)
             else:
@@ -354,7 +349,7 @@ class DocumentFormatter:
             para.paragraph_format.space_before = Pt(self.cfg.get('para_space_before', 0))
             para.paragraph_format.space_after = Pt(self.cfg.get('para_space_after', 0))
 
-            # 一级标题段前段后间距（课题模式下）
+            # 1-3级标题加段前间距
             if not in_ref_section and level in (1, 2, 3):
                 para.paragraph_format.space_before = Pt(self.cfg['line_spacing_fixed'])
                 para.paragraph_format.space_after = Pt(self.cfg['line_spacing_fixed'])
