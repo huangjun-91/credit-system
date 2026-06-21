@@ -91,6 +91,50 @@
             </div>
         </div>
 
+        <!-- 系统状态 + 数据清零 -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-database-gear fs-4 me-3" style="color: var(--primary-color);"></i>
+                            <div>
+                                <strong>数据存储</strong><br>
+                                {% if volume_status.configured %}
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> 已持久化（重启不丢数据）</span>
+                                <small class="text-muted ms-2">{{ volume_status.path }}</small>
+                                {% else %}
+                                <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> 未持久化</span>
+                                <small class="text-muted ms-2">⚠️ 服务器重启后数据将丢失！</small>
+                                <div class="mt-1">
+                                    <span class="badge bg-warning text-dark">建议在 Railway 后台添加 Volume，挂载到 /data</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-danger">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-trash3 fs-4 me-2 text-danger"></i>
+                                <strong class="text-danger">数据清零</strong>
+                                <small class="text-muted d-block">⚠️ 保留管理员账号，删除所有教师、学分记录、上传文件</small>
+                            </div>
+                            <form method="POST" action="{{ url_for('clear_all_data') }}" id="clearForm" style="display:inline;">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmClearData()">
+                                    <i class="bi bi-eraser"></i> 清空全部数据
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tabs -->
         <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
             <li class="nav-item">
@@ -284,7 +328,7 @@
         function showReviewForm(id, title, teacher, credits, desc, awardLevel, awardGrade, image) {
             const imageHtml = image ? 
                 `<div class="mb-3">
-                    <label class="form-label fw-medium">📎 证书图片：</label><br>
+                    <label class="form-label fw-medium">证书图片：</label><br>
                     <img src="/uploads/${image}" style="max-width:100%;max-height:300px;border-radius:12px;cursor:pointer" onclick="window.open(this.src)" alt="证书">
                 </div>` : '';
 
@@ -317,6 +361,14 @@
                 </form>
             `;
             new bootstrap.Modal(document.getElementById('reviewModal')).show();
+        }
+
+        function confirmClearData() {
+            if (confirm('⚠️ 确定要清空全部数据？\n\n此操作不可恢复！\n\n保留项目：管理员账号 (admin)\n删除项目：所有教师账号、学分记录、上传证书图片')) {
+                if (confirm('⚠️ 再次确认：请确保已导出 CSV 备份！\n\n确认清空？')) {
+                    document.getElementById('clearForm').submit();
+                }
+            }
         }
     </script>
 </body>

@@ -310,7 +310,7 @@ def admin_dashboard():
         "SELECT id, real_name, teacher_id, department FROM users WHERE role = 'teacher'"
     ).fetchall()
     conn.close()
-    return render_template('admin.html', pending=pending, all_records=all_records, teachers=teachers)
+    return render_template('admin.html', pending=pending, all_records=all_records, teachers=teachers, volume_status=get_volume_status())
 
 @app.route('/admin/review/<int:credit_id>', methods=['POST'])
 @admin_required
@@ -402,6 +402,53 @@ def export_data():
     resp.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
     return resp
 
+# ----- 管理后台：数据清零（保留管理员账号） -----
+@app.route('/admin/clear-data', methods=['POST'])
+@admin_required
+def clear_all_data():
+    """保留管理员账号，删除所有教师用户、学分记录、上传文件"""
+    conn = get_db()
+    try:
+        # 1. 删除所有上传文件
+        if os.path.exists(UPLOAD_FOLDER):
+            for f in os.listdir(UPLOAD_FOLDER):
+                fp = os.path.join(UPLOAD_FOLDER, f)
+                if os.path.isfile(fp):
+                    os.remove(fp)
+
+        # 2. 删除所有学分记录（关联外键，先删 credits）
+        conn.execute("DELETE FROM credits")
+
+        # 3. 删除所有非管理员用户
+        conn.execute("DELETE FROM users WHERE role != 'admin'")
+
+        conn.commit()
+        flash(f'✅ 数据已清零（{datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}）', 'success')
+        flash('保留管理员账号 (admin)。所有教师账号、学分记录、上传文件已删除。', 'info')
+    except Exception as e:
+        conn.rollback()
+        flash(f'❌ 清零失败：{str(e)}', 'danger')
+    finally:
+        conn.close()
+    return redirect(url_for('admin_dashboard'))
+
+# ----- Volume 状态检测（注入到模板） -----
+def get_volume_status():
+    """检测数据是否存储在 Railway Volume 中"""
+    volume_path = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '')
+    if volume_path:
+        return {
+            'configured': True,
+            'path': volume_path,
+            'db_exists': os.path.exists(DB_PATH),
+            'upload_count': len(os.listdir(UPLOAD_FOLDER)) if os.path.exists(UPLOAD_FOLDER) else 0,
+        }
+    return {
+        'configured': False,
+        'path': '未配置（数据存储在临时文件系统中）',
+        'hint': '建议在 Railway 后台添加 Volume 并设置环境变量 RAILWAY_VOLUME_MOUNT_PATH=/data',
+    }
+
 # ----- 图片访问 -----
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -414,5 +461,10 @@ if __name__ == '__main__':
     print("=" * 50)
     print(f"   启动地址: http://127.0.0.1:5000")
     print(f"   管理员账号: admin / admin123")
+    vol = get_volume_status()
+    if vol['configured']:
+        print(f"   ✅ Volume: {vol['path']}")
+    else:
+        print(f"   ⚠️  Volume: 未配置 - 数据将在重启后丢失")
     print("=" * 50)
     app.run(host='0.0.0.0', port=5000, debug=True)
