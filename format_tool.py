@@ -439,7 +439,22 @@ def index():
             pass
 
         try:
-            doc = Document(file)
+            # 验证文件是否为有效的 docx (ZIP格式)
+            file_bytes = file.read()
+            if len(file_bytes) < 100:
+                flash('文件内容为空或文件过小', 'error')
+                return render_template('format.html')
+            if file_bytes[0:2] != b'PK':
+                flash('文件格式错误：不是有效的 .docx 文件。'
+                      '请确认文件是用 Word 或 WPS 直接创建的 .docx 格式，'
+                      '而不是将 .doc 文件直接改后缀名得到的。', 'error')
+                return render_template('format.html')
+
+            # 重新构造文件对象
+            file.stream = io.BytesIO(file_bytes)
+            file.stream.seek(0)
+
+            doc = Document(file.stream)
 
             # 打印文档信息协助调试
             para_count = len(doc.paragraphs)
@@ -472,7 +487,13 @@ def index():
             response.headers['Content-Length'] = output.tell()
             return response
         except Exception as e:
-            flash(f'处理出错: {str(e)}', 'error')
+            error_msg = str(e)
+            print(f"[FORMAT] ERROR: {error_msg}")
+            if 'zip' in error_msg.lower() or 'file format' in error_msg.lower():
+                flash('文件格式错误：不是有效的 .docx 文件。'
+                      '请用 Word 或 WPS 另存为 ".docx" 格式后再上传。', 'error')
+            else:
+                flash(f'处理出错: {error_msg}', 'error')
             return render_template('format.html')
 
     return render_template('format.html')
