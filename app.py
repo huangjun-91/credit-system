@@ -7,7 +7,11 @@ import os
 import sqlite3
 import uuid
 import datetime
+import smtplib
+import json
 from functools import wraps
+from email.mime.text import MIMEText
+from email.header import Header
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 
@@ -19,6 +23,55 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', BASE_DIR)
 DB_PATH = os.path.join(DATA_DIR, 'database.db')
 UPLOAD_FOLDER = os.path.join(DATA_DIR, 'uploads')
+
+# ========== 邮件配置 ==========
+SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.qq.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+SMTP_USER = os.environ.get('SMTP_USER', '1573903046@qq.com')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+ALERT_EMAIL = os.environ.get('ALERT_EMAIL', '1573903046@qq.com')
+
+def send_email(subject, body):
+    """发送邮件通知"""
+    if not SMTP_PASSWORD:
+        return False
+    try:
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['Subject'] = Header(subject, 'utf-8')
+        msg['From'] = SMTP_USER
+        msg['To'] = ALERT_EMAIL
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.sendmail(SMTP_USER, [ALERT_EMAIL], msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[邮件发送失败] {e}")
+        return False
+
+# ========== 健康检查 ==========
+@app.route('/health')
+def health_check():
+    """健康检查接口 - 供外部监控使用"""
+    db_ok = os.path.exists(DB_PATH)
+    upload_ok = os.path.exists(UPLOAD_FOLDER)
+    status = {
+        'status': 'ok' if db_ok else 'degraded',
+        'timestamp': datetime.datetime.now().isoformat(),
+        'db_exists': db_ok,
+        'volume_configured': bool(os.environ.get('RAILWAY_VOLUME_MOUNT_PATH')),
+        'user_count': None,
+        'record_count': None,
+    }
+    if db_ok:
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            status['user_count'] = conn.execute("SELECT COUNT(*) FROM users WHERE role='teacher'").fetchone()[0]
+            status['record_count'] = conn.execute("SELECT COUNT(*) FROM credits").fetchone()[0]
+            conn.close()
+        except:
+            pass
+    return jsonify(status)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB
 
@@ -466,5 +519,9 @@ if __name__ == '__main__':
         print(f"   ✅ Volume: {vol['path']}")
     else:
         print(f"   ⚠️  Volume: 未配置 - 数据将在重启后丢失")
+    if SMTP_PASSWORD:
+        print(f"   ✅ 邮件通知: 已配置 -> {ALERT_EMAIL}")
+    else:
+        print(f"   ⚠️  邮件通知: 未配置 (设置 SMTP_PASSWORD)")
     print("=" * 50)
     app.run(host='0.0.0.0', port=5000, debug=True)
