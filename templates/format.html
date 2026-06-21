@@ -3,338 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公文一键排版 - 党政机关公文格式</title>
+    <title>Word 格式排版工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            background: #f0f4f8;
-            color: #1a202c;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        .header h1 {
-            font-size: 28px;
-            color: #c53030;
-            margin-bottom: 8px;
-        }
-        .header .badge {
-            display: inline-block;
-            background: #c53030;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .header p {
-            color: #718096;
-            font-size: 14px;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            padding: 32px;
-            margin-bottom: 20px;
-        }
-        .card h2 {
-            font-size: 18px;
-            color: #2d3748;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .card h2 .step { 
-            background: #4299e1;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-        }
-        .upload-area {
-            border: 2px dashed #cbd5e0;
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #f7fafc;
-        }
+        body { font-family: 'Microsoft YaHei', '微软雅黑', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 28px; }
+        .header h1 { font-size: 28px; color: #2d3748; margin-bottom: 6px; }
+        .header p { color: #718096; font-size: 14px; }
+
+        /* 模式切换 */
+        .mode-tabs { display: flex; gap: 0; margin-bottom: 24px; background: #e2e8f0; border-radius: 10px; padding: 4px; }
+        .mode-tab { flex: 1; text-align: center; padding: 12px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 500; color: #4a5568; border: none; background: transparent; }
+        .mode-tab:hover { color: #2d3748; }
+        .mode-tab.active { background: white; color: #2d3748; box-shadow: 0 2px 6px rgba(0,0,0,0.1); font-weight: 600; }
+        .mode-tab .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+        .badge-red { background: #fed7d7; color: #c53030; }
+        .badge-blue { background: #bee3f8; color: #2b6cb0; }
+
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 32px; margin-bottom: 20px; }
+        .card h2 { font-size: 18px; color: #2d3748; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 8px; }
+        .card h2 .step { background: #4299e1; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+
+        .upload-area { border: 2px dashed #cbd5e0; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; background: #f7fafc; }
         .upload-area:hover { border-color: #4299e1; background: #ebf8ff; }
         .upload-area.dragover { border-color: #4299e1; background: #ebf8ff; }
         .upload-area input[type="file"] { display: none; }
         .upload-icon { font-size: 48px; margin-bottom: 12px; }
         .upload-text { color: #4a5568; font-size: 16px; }
         .upload-hint { color: #a0aec0; font-size: 13px; margin-top: 8px; }
-        .config-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .config-item {
-            display: flex;
-            flex-direction: column;
-        }
-        .config-item label {
-            font-size: 13px;
-            color: #4a5568;
-            margin-bottom: 4px;
-            font-weight: 500;
-        }
-        .config-item input {
-            padding: 8px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-        .config-item input:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66,153,225,0.15);
-        }
-        .config-item .unit {
-            font-size: 11px;
-            color: #a0aec0;
-            margin-top: 2px;
-        }
-        .config-item .default {
-            font-size: 11px;
-            color: #9f7aea;
-            margin-top: 2px;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: #c53030;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 20px;
-        }
-        .btn:hover { background: #9b2c2c; }
+
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .config-item { display: flex; flex-direction: column; }
+        .config-item label { font-size: 13px; color: #4a5568; margin-bottom: 4px; font-weight: 500; }
+        .config-item input { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
+        .config-item input:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,0.15); }
+        .config-item .unit { font-size: 11px; color: #a0aec0; margin-top: 2px; }
+
+        .btn { display: block; width: 100%; padding: 14px; background: #4299e1; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 20px; color: white; }
+        .btn:hover { background: #3182ce; }
         .btn:disabled { background: #a0aec0; cursor: not-allowed; }
         .btn .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .btn.loading .spinner { display: block; }
         .btn.loading .btn-text { display: none; }
+        .btn.gongwen { background: #c53030; }
+        .btn.gongwen:hover { background: #9b2c2c; }
+        .btn.keti { background: #2b6cb0; }
+        .btn.keti:hover { background: #1a365d; }
 
         .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
         .flash.error { background: #fed7d7; color: #c53030; border: 1px solid #feb2b2; }
 
-        #file-name {
-            margin-top: 12px; padding: 8px 12px; background: #f7fafc;
-            border-radius: 6px; font-size: 14px; color: #2d3748; display: none;
-        }
+        #file-name { margin-top: 12px; padding: 8px 12px; background: #f7fafc; border-radius: 6px; font-size: 14px; color: #2d3748; display: none; }
 
-        .rules-table {
-            width: 100%;
-            font-size: 13px;
-            border-collapse: collapse;
-        }
-        .rules-table th, .rules-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #e2e8f0;
-            text-align: left;
-        }
+        .rules-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+        .rules-table th, .rules-table td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
         .rules-table th { background: #f7fafc; font-weight: 600; color: #4a5568; }
         .rules-table tr:last-child td { border-bottom: none; }
-        .rules-table .font-demo { font-size: 15px; }
-        .font-xiaobiao { font-family: '方正小标宋体', '华文中宋', 'SimSun', serif; }
-        .font-hei { font-family: '方正黑体体', '黑体', 'SimHei', sans-serif; }
-        .font-kai { font-family: '方正楷体体', '楷体', 'KaiTi', serif; }
-        .font-fang { font-family: '方正仿宋体', '仿宋', 'FangSong', serif; }
+        .rules-table .s { font-size: 14px; }
 
-        .note {
-            background: #fffbeb;
-            border-left: 4px solid #d69e2e;
-            padding: 12px 16px;
-            border-radius: 0 6px 6px 0;
-            font-size: 13px;
-            color: #744210;
-            margin-top: 12px;
-            line-height: 1.6;
-        }
+        .mode-rules { display: none; }
+        .mode-rules.active { display: block; }
 
-        @media (max-width: 600px) {
-            .config-grid { grid-template-columns: 1fr; }
-            .container { padding: 20px 12px; }
-            .card { padding: 20px; }
-        }
+        .note-box { background: #fffbeb; border-left: 4px solid #d69e2e; padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 13px; color: #744210; margin-top: 12px; line-height: 1.6; }
+
+        @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } .container { padding: 20px 12px; } .card { padding: 20px; } }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="badge">GB/T 9704-2012</span>
-        <h1>📄 公文一键排版</h1>
-        <p>党政机关公文格式规范 · 上传 .docx 自动排版</p>
+        <h1>📄 Word 格式排版</h1>
+        <p>选择格式模板，上传 .docx 自动排版后下载</p>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}{% endif %}
     {% endwith %}
 
     <form id="format-form" method="post" enctype="multipart/form-data" action="/format/">
+        <input type="hidden" name="mode" id="mode-input" value="keti">
+
+        <!-- 模式切换 -->
+        <div class="mode-tabs">
+            <button type="button" class="mode-tab active" data-mode="keti">
+                📘 课题报告 <span class="badge badge-blue">推荐</span>
+            </button>
+            <button type="button" class="mode-tab" data-mode="gongwen">
+                📕 公文格式 <span class="badge badge-red">党政机关</span>
+            </button>
+        </div>
+
         <div class="card">
             <h2><span class="step">1</span> 选择文件</h2>
             <div class="upload-area" id="upload-area">
                 <div class="upload-icon">📎</div>
                 <div class="upload-text">点击上传 Word 文档</div>
-                <div class="upload-hint">仅支持 .docx 格式</div>
+                <div class="upload-hint">仅支持 .docx 格式 · 含表格也可</div>
                 <input type="file" name="file" id="file-input" accept=".docx">
             </div>
             <div id="file-name"></div>
         </div>
 
         <div class="card">
-            <h2><span class="step">2</span> 参数调整 <span style="font-size:12px;color:#a0aec0;font-weight:400;">（一般用默认值即可）</span></h2>
+            <h2><span class="step">2</span> 参数微调 <span style="font-size:12px;color:#a0aec0;font-weight:400;">（用默认值即可）</span></h2>
             <div class="config-grid">
                 <div class="config-item">
                     <label>标题字号</label>
-                    <input type="number" name="title_size" value="22" step="1" min="12" max="48">
-                    <span class="unit">磅，默认 <strong>22pt</strong>（二号）</span>
+                    <input type="number" name="title_size" id="title_size" value="18" step="1" min="12" max="48">
+                    <span class="unit" id="title_size_unit">磅，默认 18pt（小二号）</span>
                 </div>
                 <div class="config-item">
                     <label>正文字号</label>
-                    <input type="number" name="body_size" value="16" step="1" min="10" max="36">
-                    <span class="unit">磅，默认 <strong>16pt</strong>（三号）</span>
+                    <input type="number" name="body_size" id="body_size" value="12" step="1" min="8" max="36">
+                    <span class="unit" id="body_size_unit">磅，默认 12pt（小四号）</span>
                 </div>
                 <div class="config-item">
                     <label>行距（固定值）</label>
-                    <input type="number" name="line_spacing" value="28" step="1" min="20" max="40">
-                    <span class="unit">磅，默认 <strong>28磅</strong>（23-28磅区间）</span>
+                    <input type="number" name="line_spacing" id="line_spacing" value="20" step="1" min="12" max="40">
+                    <span class="unit" id="line_spacing_unit">磅，默认 20磅</span>
                 </div>
                 <div class="config-item">
                     <label>上页边距</label>
-                    <input type="number" name="margin_top" value="3.7" step="0.1" min="1" max="6">
-                    <span class="unit">厘米，默认 <strong>3.7cm</strong></span>
+                    <input type="number" name="margin_top" id="margin_top" value="2.54" step="0.1" min="1" max="6">
+                    <span class="unit" id="margin_top_unit">厘米</span>
                 </div>
                 <div class="config-item">
                     <label>下页边距</label>
-                    <input type="number" name="margin_bottom" value="3.5" step="0.1" min="1" max="6">
-                    <span class="unit">厘米，默认 <strong>3.5cm</strong></span>
+                    <input type="number" name="margin_bottom" id="margin_bottom" value="2.54" step="0.1" min="1" max="6">
+                    <span class="unit" id="margin_bottom_unit">厘米</span>
                 </div>
                 <div class="config-item">
                     <label>左页边距</label>
-                    <input type="number" name="margin_left" value="2.7" step="0.1" min="1" max="5">
-                    <span class="unit">厘米，默认 <strong>2.7cm</strong></span>
+                    <input type="number" name="margin_left" id="margin_left" value="3.18" step="0.1" min="1" max="5">
+                    <span class="unit" id="margin_left_unit">厘米</span>
                 </div>
                 <div class="config-item">
                     <label>右页边距</label>
-                    <input type="number" name="margin_right" value="2.7" step="0.1" min="1" max="5">
-                    <span class="unit">厘米，默认 <strong>2.7cm</strong></span>
+                    <input type="number" name="margin_right" id="margin_right" value="3.18" step="0.1" min="1" max="5">
+                    <span class="unit" id="margin_right_unit">厘米</span>
                 </div>
             </div>
         </div>
 
-        <button type="submit" class="btn" id="submit-btn">
+        <button type="submit" class="btn keti" id="submit-btn">
             <span class="btn-text">⚡ 开始排版 & 下载</span>
             <span class="spinner"></span>
         </button>
     </form>
 
-    <div class="card">
-        <h2>📋 排版规则说明</h2>
+    <!-- 课题报告规则 -->
+    <div class="card mode-rules active" id="rules-keti">
+        <h2>📘 课题报告排版规则</h2>
         <table class="rules-table">
-            <thead>
-                <tr><th>要素</th><th>字体</th><th>字号</th><th>其他</th></tr>
-            </thead>
+            <thead><tr><th>要素</th><th>字体/字号</th><th>其他</th></tr></thead>
             <tbody>
-                <tr>
-                    <td><strong>公文标题</strong></td>
-                    <td class="font-demo font-xiaobiao">方正小标宋体</td>
-                    <td>二号 (22pt)</td>
-                    <td>居中</td>
-                </tr>
-                <tr>
-                    <td><strong>一级标题</strong><br><span style="color:#a0aec0">一、</span></td>
-                    <td class="font-demo font-hei">方正黑体体</td>
-                    <td>三号 (16pt)</td>
-                    <td>顶格</td>
-                </tr>
-                <tr>
-                    <td><strong>二级标题</strong><br><span style="color:#a0aec0">（一）</span></td>
-                    <td class="font-demo font-kai">方正楷体体</td>
-                    <td>三号 (16pt)</td>
-                    <td>顶格</td>
-                </tr>
-                <tr>
-                    <td><strong>三级标题</strong><br><span style="color:#a0aec0">1.</span></td>
-                    <td class="font-demo font-fang">方正仿宋体</td>
-                    <td>三号 (16pt)</td>
-                    <td>顶格</td>
-                </tr>
-                <tr>
-                    <td><strong>四级标题</strong><br><span style="color:#a0aec0">（1）</span></td>
-                    <td class="font-demo font-fang">方正仿宋体</td>
-                    <td>三号 (16pt)</td>
-                    <td>顶格</td>
-                </tr>
-                <tr>
-                    <td><strong>正文</strong></td>
-                    <td class="font-demo font-fang">方正仿宋体</td>
-                    <td>三号 (16pt)</td>
-                    <td>首行缩进2字符<br>两端对齐</td>
-                </tr>
-                <tr>
-                    <td><strong>页码</strong></td>
-                    <td>Times New Roman</td>
-                    <td>4号 (14pt)</td>
-                    <td>底端外侧<br>— 1 —</td>
-                </tr>
+                <tr><td><strong>题目</strong></td><td>宋体、<strong>小二号(18pt)</strong>、加粗</td><td>居中</td></tr>
+                <tr><td><strong>承担单位</strong></td><td>宋体、小四 (12pt)</td><td>居中</td></tr>
+                <tr><td><strong>一级标题 一、</strong></td><td class="s"><strong>黑体、三号(16pt)</strong></td><td>独立成行，无标点</td></tr>
+                <tr><td><strong>二级标题（一）</strong></td><td class="s"><strong>黑体、小三(15pt)</strong></td><td>独立成行，无标点</td></tr>
+                <tr><td><strong>三级标题 1．</strong></td><td class="s"><strong>黑体、四号(14pt)</strong></td><td>独立成行，无标点</td></tr>
+                <tr><td><strong>四级标题（1）</strong></td><td>宋体、小四 (12pt)</td><td>独立成行，无标点</td></tr>
+                <tr><td><strong>五级标题 ①</strong></td><td>宋体、小四 (12pt)</td><td>独立成行，无标点</td></tr>
+                <tr><td><strong>正文</strong></td><td>宋体、小四 (12pt)</td><td>首行缩进2字符，两端对齐</td></tr>
+                <tr><td><strong>表格</strong></td><td>宋体、居中</td><td>自动加边框</td></tr>
+                <tr><td><strong>参考文献</strong></td><td>宋体、五号 (10.5pt)</td><td>自动识别 [N] 条目</td></tr>
             </tbody>
         </table>
-
-        <div class="note">
-            <strong>💡 注意：</strong>方正字体需在 Windows 系统中安装才能正常显示。
-            如未安装，Word 会自动使用替代字体（如黑体、楷体、仿宋）。
-            将方正字体包解压复制到 <code>C:\Windows\Fonts</code> 即可安装。
+        <div class="note-box">
+            <strong>💡 格式要点：</strong>段前段后都为0；行距固定值20磅；
+            各级标题独立成行，其后不加标点符号；凡括弧后都不加标点符号。
         </div>
+    </div>
 
-        <table class="rules-table" style="margin-top:16px;">
-            <thead>
-                <tr><th>页面设置</th><th>值</th></tr>
-            </thead>
+    <!-- 公文规则 -->
+    <div class="card mode-rules" id="rules-gongwen">
+        <h2>📕 公文排版规则（GB/T 9704-2012）</h2>
+        <table class="rules-table">
+            <thead><tr><th>要素</th><th>字体/字号</th><th>其他</th></tr></thead>
             <tbody>
-                <tr><td>纸张</td><td>A4 (21cm × 29.7cm)</td></tr>
-                <tr><td>页边距（上 下 左 右）</td><td>3.7cm  3.5cm  2.7cm  2.7cm</td></tr>
-                <tr><td>行距</td><td>固定值 28磅（每页约22行）</td></tr>
-                <tr><td>每行字数</td><td>约28字</td></tr>
-                <tr><td>附件标记</td><td>"附件"左空2字标注</td></tr>
+                <tr><td><strong>公文标题</strong></td><td>方正小标宋、二号 (22pt)</td><td>居中</td></tr>
+                <tr><td><strong>一级标题 一、</strong></td><td>方正黑体、三号 (16pt)</td><td>顶格</td></tr>
+                <tr><td><strong>二级标题（一）</strong></td><td>方正楷体、三号 (16pt)</td><td>顶格</td></tr>
+                <tr><td><strong>三级标题 1.</strong></td><td>方正仿宋、三号 (16pt)</td><td>顶格</td></tr>
+                <tr><td><strong>四级标题（1）</strong></td><td>方正仿宋、三号 (16pt)</td><td>顶格</td></tr>
+                <tr><td><strong>正文</strong></td><td>方正仿宋、三号 (16pt)</td><td>首行缩进2字符</td></tr>
+                <tr><td><strong>页码</strong></td><td>Times New Roman、4号(14pt)</td><td>— 1 — 底端外侧</td></tr>
             </tbody>
         </table>
+        <div class="note-box">
+            <strong>💡 页面设置：</strong>A4纸 · 上3.7 下3.5 左2.7 右2.7 cm · 行距固定28磅 · 每页22行28字
+        </div>
     </div>
 </div>
 
 <script>
+// 模式切换
+const tabs = document.querySelectorAll('.mode-tab');
+const modeInput = document.getElementById('mode-input');
+const btn = document.getElementById('submit-btn');
+const rulesKeti = document.getElementById('rules-keti');
+const rulesGw = document.getElementById('rules-gongwen');
+
+const defaults = {
+    keti: { title_size: 18, body_size: 12, line_spacing: 20, margin_top: 2.54, margin_bottom: 2.54, margin_left: 3.18, margin_right: 3.18 },
+    gongwen: { title_size: 22, body_size: 16, line_spacing: 28, margin_top: 3.7, margin_bottom: 3.5, margin_left: 2.7, margin_right: 2.7 }
+};
+const labels = {
+    keti: { title: '磅，默认 18pt（小二号）', body: '磅，默认 12pt（小四号）', line: '磅，默认 20磅', mt: '厘米，默认 2.54cm', mb: '厘米，默认 2.54cm', ml: '厘米，默认 3.18cm', mr: '厘米，默认 3.18cm' },
+    gongwen: { title: '磅，默认 22pt（二号）', body: '磅，默认 16pt（三号）', line: '磅，默认 28磅（23-28）', mt: '厘米，默认 3.7cm', mb: '厘米，默认 3.5cm', ml: '厘米，默认 2.7cm', mr: '厘米，默认 2.7cm' }
+};
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const mode = tab.dataset.mode;
+        modeInput.value = mode;
+
+        // 切换按钮颜色
+        btn.className = 'btn ' + mode;
+
+        // 切换规则说明
+        rulesKeti.classList.toggle('active', mode === 'keti');
+        rulesGw.classList.toggle('active', mode === 'gongwen');
+
+        // 更新默认值和单位标签
+        const d = defaults[mode];
+        const l = labels[mode];
+        document.getElementById('title_size').value = d.title_size;
+        document.getElementById('body_size').value = d.body_size;
+        document.getElementById('line_spacing').value = d.line_spacing;
+        document.getElementById('margin_top').value = d.margin_top;
+        document.getElementById('margin_bottom').value = d.margin_bottom;
+        document.getElementById('margin_left').value = d.margin_left;
+        document.getElementById('margin_right').value = d.margin_right;
+        document.getElementById('title_size_unit').textContent = l.title;
+        document.getElementById('body_size_unit').textContent = l.body;
+        document.getElementById('line_spacing_unit').textContent = l.line;
+        document.getElementById('margin_top_unit').textContent = l.mt;
+        document.getElementById('margin_bottom_unit').textContent = l.mb;
+        document.getElementById('margin_left_unit').textContent = l.ml;
+        document.getElementById('margin_right_unit').textContent = l.mr;
+    });
+});
+
+// 文件上传
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('file-input');
 const fileName = document.getElementById('file-name');
@@ -345,8 +262,7 @@ uploadArea.addEventListener('click', () => fileInput.click());
 uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
 uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
 uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
+    e.preventDefault(); uploadArea.classList.remove('dragover');
     if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; updateFileName(); }
 });
 fileInput.addEventListener('change', updateFileName);
@@ -362,9 +278,8 @@ function updateFileName() {
     }
 }
 form.addEventListener('submit', () => {
-    if (!fileInput.files.length) { alert('请先选择一个 Word 文档'); return; }
-    submitBtn.disabled = true;
-    submitBtn.classList.add('loading');
+    if (!fileInput.files.length) { alert('请先选择文件'); return; }
+    submitBtn.disabled = true; submitBtn.classList.add('loading');
 });
 </script>
 </body>
