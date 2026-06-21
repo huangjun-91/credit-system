@@ -15,6 +15,9 @@ from email.header import Header
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 
+app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'change-this-in-production')
+
 # ========== 注册 Word 排版工具 ==========
 try:
     from format_tool import format_bp
@@ -22,9 +25,6 @@ try:
     print("   ✅ Word排版工具已加载 -> /format/")
 except ImportError as e:
     print(f"   ⚠️  Word排版工具未加载: {e}")
-
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'change-this-in-production')
 
 # ========== 配置 ==========
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
