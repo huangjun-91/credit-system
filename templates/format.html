@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word一键排版工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 28px;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #718096;
+            font-size: 14px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 32px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f7fafc;
+        }
+        .upload-area:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+        .upload-area.dragover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .upload-text {
+            color: #4a5568;
+            font-size: 16px;
+        }
+        .upload-hint {
+            color: #a0aec0;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .config-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .config-item label {
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 4px;
+        }
+        .config-item input {
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .config-item input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66,153,225,0.15);
+        }
+        .config-item .unit {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-top: 2px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 20px;
+        }
+        .btn:hover { background: #3182ce; }
+        .btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        .btn .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn.loading .spinner { display: block; }
+        .btn.loading .btn-text { display: none; }
+
+        .flash {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .flash.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        .flash.success {
+            background: #c6f6d5;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+
+        #file-name {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #2d3748;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .config-grid { grid-template-columns: 1fr; }
+            .container { padding: 20px 12px; }
+            .card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📄 Word 一键排版</h1>
+        <p>上传 .docx 文件，自动设置：标题字号、正文格式、行距、首行缩进、页边距、页码</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="format-form" method="post" enctype="multipart/form-data" action="/format/">
+        <div class="card">
+            <h2>① 选择文件</h2>
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">📎</div>
+                <div class="upload-text">点击上传 Word 文档</div>
+                <div class="upload-hint">仅支持 .docx 格式</div>
+                <input type="file" name="file" id="file-input" accept=".docx">
+            </div>
+            <div id="file-name"></div>
+        </div>
+
+        <div class="card">
+            <h2>② 排版设置</h2>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>标题字号</label>
+                    <input type="number" name="title_size" value="22" step="1" min="12" max="48">
+                    <span class="unit">磅 (pt)，默认二号=22pt</span>
+                </div>
+                <div class="config-item">
+                    <label>正文字号</label>
+                    <input type="number" name="body_size" value="16" step="1" min="10" max="36">
+                    <span class="unit">磅 (pt)，默认三号=16pt</span>
+                </div>
+                <div class="config-item">
+                    <label>行间距</label>
+                    <input type="number" name="line_spacing" value="1.5" step="0.1" min="1.0" max="3.0">
+                    <span class="unit">倍 (1.0~3.0)</span>
+                </div>
+                <div class="config-item">
+                    <label>上/下页边距</label>
+                    <input type="number" name="margin_top" value="2.54" step="0.1" min="1" max="5">
+                    <span class="unit">厘米</span>
+                </div>
+                <div class="config-item">
+                    <label>左/右页边距</label>
+                    <input type="number" name="margin_left" value="3.18" step="0.1" min="1" max="5">
+                    <span class="unit">厘米</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn" id="submit-btn">
+            <span class="btn-text">⚡ 开始排版 & 下载</span>
+            <span class="spinner"></span>
+        </button>
+    </form>
+
+    <div class="card" style="margin-top:20px; background:#f7fafc;">
+        <h2>📋 排版规则说明</h2>
+        <ul style="padding-left:20px; font-size:14px; color:#4a5568; line-height:1.8;">
+            <li><strong>标题</strong>：文档第一个段落自动居中、加粗、黑体</li>
+            <li><strong>正文</strong>：仿宋、首行缩进2字符、两端对齐</li>
+            <li><strong>行距</strong>：默认 1.5 倍，可自定义</li>
+            <li><strong>页码</strong>：自动添加居中页码</li>
+            <li><strong>目录</strong>：自动在开头生成内容索引</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('file-input');
+const fileName = document.getElementById('file-name');
+const form = document.getElementById('format-form');
+const submitBtn = document.getElementById('submit-btn');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        updateFileName();
+    }
+});
+
+fileInput.addEventListener('change', updateFileName);
+
+function updateFileName() {
+    const file = fileInput.files[0];
+    if (file) {
+        fileName.textContent = '📄 ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        fileName.style.display = 'block';
+        uploadArea.querySelector('.upload-text').textContent = '点击更换文件';
+    } else {
+        fileName.style.display = 'none';
+        uploadArea.querySelector('.upload-text').textContent = '点击上传 Word 文档';
+    }
+}
+
+form.addEventListener('submit', () => {
+    if (!fileInput.files.length) {
+        alert('请先选择一个 Word 文档');
+        return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+});
+</script>
+</body>
+</html>
