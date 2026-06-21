@@ -72,6 +72,27 @@ def health_check():
         except:
             pass
     return jsonify(status)
+
+# ----- 测试邮件接口 -----
+@app.route('/admin/test-email')
+def test_email():
+    """触发发送测试邮件"""
+    from flask import request as flask_req
+    key = flask_req.args.get('key', '')
+    # 简单鉴权，防止被滥用
+    if key != os.environ.get('SECRET_KEY', '')[:8]:
+        return jsonify({'error': 'unauthorized'}), 403
+    sent = send_email(
+        '✅ 信用系统测试通知',
+        f'系统健康检查通过！\n\n'
+        f'时间：{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n'
+        f'Volume：已持久化\n'
+        f'状态：正常运行\n\n'
+        f'-- 云阳县民德小学教师获奖证书管理系统'
+    )
+    if sent:
+        return jsonify({'ok': True, 'message': '测试邮件已发送到 1573903046@qq.com'})
+    return jsonify({'ok': False, 'message': '邮件发送失败，请检查 SMTP 配置'}), 500
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB
 
